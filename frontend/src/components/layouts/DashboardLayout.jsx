@@ -81,7 +81,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
   const menuConfig = {
     donor: {
       title: "OneDrop",
-      subtitle: "",
       shortTitle: "Donor",
       icon: User,
       items: [
@@ -108,7 +107,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
     },
     hospital: {
       title: "OneDrop",
-      subtitle: "",
       shortTitle: "Hospital",
       icon: Building,
       items: [
@@ -136,7 +134,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
     },
     blood_lab: {
       title: "OneDrop",
-      subtitle: "",
       shortTitle: "Lab",
       icon: TestTube,
       items: [
@@ -165,7 +162,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
     },
     admin: {
       title: "OneDrop",
-      subtitle: "",
       shortTitle: "Admin",
       icon: Shield,
       items: [
@@ -273,7 +269,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
   const normalizedRole = userRole?.toLowerCase().replace("-", "_");
   const config = menuConfig[normalizedRole] || {
     title: "OneDrop",
-    subtitle: "",
     shortTitle: "App",
     icon: BarChart3,
     items: [],
@@ -341,14 +336,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
               >
                 {config.title}
               </h1>
-              {config.subtitle && (
-                <p
-                  className="text-xs sm:text-sm"
-                  style={{ color: theme.secondary[500] }}
-                >
-                  {config.subtitle}
-                </p>
-              )}
             </div>
             <div className="sm:hidden">
               <h1
