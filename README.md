@@ -111,3 +111,24 @@ In `production`, OTP delivery must succeed through configured providers.
 ### Docker Compose
 
 Use [docker-compose.yml](docker-compose.yml) to run frontend, backend, and MongoDB together.
+
+## Secret Guard (Pre-commit)
+
+This repository includes a pre-commit hook to reduce accidental secret leaks.
+
+What it blocks:
+
+- Any `.env` file commit (except `.env.example`)
+- Common high-risk secrets in staged changes (Mongo URI creds, JWT secret assignments, Twilio token assignments, SMTP password assignments, private keys, API token patterns)
+
+Install once per clone:
+
+```bash
+./scripts/install-git-hooks.sh
+```
+
+Windows CMD:
+
+```cmd
+scripts\install-git-hooks.cmd
+```
