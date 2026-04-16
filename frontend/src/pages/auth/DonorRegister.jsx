@@ -452,13 +452,13 @@ export default function DonorRegisterForm() {
             <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-red-400 to-red-900 p-2 shadow-2xl">
               <img
                 src={bloodLogo}
-                alt="Blood Bank Logo"
+                alt="OneDrop Logo"
                 className="w-full h-full object-contain rounded-3xl bg-white/95"
               />
             </div>
           </div>
           <h1 className="text-2xl font-bold text-center mb-2">
-            Blood Donor Registration
+            OneDrop Donor Registration
           </h1>
           <p className="text-center mb-4 opacity-90">
             Join our life-saving mission in 3 simple steps

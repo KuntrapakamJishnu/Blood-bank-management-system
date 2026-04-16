@@ -77,11 +77,11 @@ const DashboardLayout = ({ userRole = "donor" }) => {
     },
   };
 
-  // Enhanced Sidebar menus for BBMS with blood bank icons
+  // Enhanced sidebar menus
   const menuConfig = {
     donor: {
-      title: "Blood Donor Portal",
-      subtitle: "Be a Hero, Save Lives",
+      title: "OneDrop",
+      subtitle: "",
       shortTitle: "Donor",
       icon: User,
       items: [
@@ -107,8 +107,8 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       ],
     },
     hospital: {
-      title: "Hospital Management",
-      subtitle: "Blood Request & Inventory",
+      title: "OneDrop",
+      subtitle: "",
       shortTitle: "Hospital",
       icon: Building,
       items: [
@@ -135,8 +135,8 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       ],
     },
     blood_lab: {
-      title: "Blood Lab Center",
-      subtitle: "Testing & Quality Control",
+      title: "OneDrop",
+      subtitle: "",
       shortTitle: "Lab",
       icon: TestTube,
       items: [
@@ -164,8 +164,8 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       ],
     },
     admin: {
-      title: "BBMS Admin Panel",
-      subtitle: "System Administration",
+      title: "OneDrop",
+      subtitle: "",
       shortTitle: "Admin",
       icon: Shield,
       items: [
@@ -272,8 +272,8 @@ const DashboardLayout = ({ userRole = "donor" }) => {
 
   const normalizedRole = userRole?.toLowerCase().replace("-", "_");
   const config = menuConfig[normalizedRole] || {
-    title: "Dashboard",
-    subtitle: "Welcome to the Blood Bank System",
+    title: "OneDrop",
+    subtitle: "",
     shortTitle: "App",
     icon: BarChart3,
     items: [],
@@ -330,7 +330,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
             <div className="relative p-2 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 shadow-xl">
               <img
                 src={bloodLogo}
-                alt="Blood Bank Logo"
+                alt="OneDrop Logo"
                 className="w-14 h-14 object-contain rounded-xl bg-white/95"
               />
             </div>
@@ -341,12 +341,14 @@ const DashboardLayout = ({ userRole = "donor" }) => {
               >
                 {config.title}
               </h1>
-              <p
-                className="text-xs sm:text-sm"
-                style={{ color: theme.secondary[500] }}
-              >
-                {config.subtitle}
-              </p>
+              {config.subtitle && (
+                <p
+                  className="text-xs sm:text-sm"
+                  style={{ color: theme.secondary[500] }}
+                >
+                  {config.subtitle}
+                </p>
+              )}
             </div>
             <div className="sm:hidden">
               <h1
@@ -421,7 +423,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                 <div className="p-2 rounded-xl bg-gradient-to-br from-red-500 to-red-700 shadow-lg">
                   <img
                     src={bloodLogo}
-                    alt="Blood Bank Logo"
+                    alt="OneDrop Logo"
                     className="w-14 h-14 object-contain rounded-lg bg-white/95"
                   />
                 </div>
@@ -536,10 +538,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                   color: theme.primary[700],
                 }}
               >
-                <p className="text-sm font-semibold">Blood Bank MS</p>
-                <p className="text-xs mt-1 opacity-75">
-                  Save Lives, Donate Blood
-                </p>
+                <p className="text-sm font-semibold">OneDrop</p>
               </div>
             </div>
           )}

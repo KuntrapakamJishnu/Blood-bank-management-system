@@ -48,6 +48,12 @@ const AboutUs = () => {
 
   const team = [
     {
+      name: 'Kuntrapakam Jishnu',
+      role: 'Admin & Platform Lead',
+      image: 'https://ui-avatars.com/api/?name=Kuntrapakam+Jishnu&background=dc2626&color=fff',
+      bio: 'Leading platform operations, admin workflows, and emergency response coordination.'
+    },
+    {
       name: 'Dr. Sarah Chen',
       role: 'Medical Director',
       image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face',
@@ -193,7 +199,7 @@ const AboutUs = () => {
               Passionate professionals dedicated to making a difference in healthcare
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
             {team.map((member, index) => (
               <div key={index} className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
                 <div className="h-48 bg-gradient-to-r from-red-400 to-red-600 relative overflow-hidden">
@@ -237,7 +243,7 @@ const AboutUs = () => {
       {/* Contact Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-4 gap-8">
             <div className="text-center">
               <Phone className="w-8 h-8 text-red-600 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Emergency Helpline</h3>
@@ -247,14 +253,20 @@ const AboutUs = () => {
             <div className="text-center">
               <Mail className="w-8 h-8 text-red-600 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Email Us</h3>
-              <p className="text-gray-600">help@bloodconnect.org</p>
-              <p className="text-gray-600">support@bloodconnect.org</p>
+              <p className="text-gray-600">hello@onedrop.app</p>
+              <p className="text-gray-600">support@onedrop.app</p>
             </div>
             <div className="text-center">
               <Globe className="w-8 h-8 text-red-600 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Headquarters</h3>
-              <p className="text-gray-600">123 Healthcare Ave</p>
-              <p className="text-gray-600">Medical District, City 12345</p>
+              <p className="text-gray-600">Amaravathi, AP</p>
+              <p className="text-gray-600">India</p>
+            </div>
+            <div className="text-center">
+              <Users className="w-8 h-8 text-red-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Admin</h3>
+              <p className="text-gray-600">Kuntrapakam Jishnu</p>
+              <p className="text-gray-600">Platform Administrator</p>
             </div>
           </div>
         </div>

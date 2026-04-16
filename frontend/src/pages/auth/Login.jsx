@@ -99,13 +99,13 @@ export default function Login() {
           <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-red-500 to-red-700 p-2 shadow-2xl">
             <img
               src={bloodLogo}
-              alt="Blood Bank Logo"
+              alt="OneDrop Logo"
               className="w-full h-full object-contain rounded-3xl bg-white/95"
             />
           </div>
         </div>
         <h2 className="text-2xl font-bold text-center text-gray-900 mb-4">
-          Login to Blood Bank
+          Login to OneDrop
         </h2>
         <p className="text-center text-gray-500 mb-6">
           Access your donor, hospital, or lab dashboard

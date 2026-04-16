@@ -47,18 +47,14 @@ const Footer = () => {
                 <span className="absolute inset-0 rounded-xl bg-red-500/20 blur-sm"></span>
                 <img
                   src={bloodLogo}
-                  alt="Blood Bank Logo"
+                  alt="OneDrop Logo"
                   className="relative w-full h-full object-contain rounded-2xl bg-white/95"
                 />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">BloodConnect</h2>
-                <p className="text-red-200 text-sm">Life Saver Network</p>
+                <h2 className="text-xl font-bold text-white">OneDrop</h2>
               </div>
             </Link>
-            <p className="text-gray-300 mb-6 leading-relaxed">
-              Connecting compassionate donors with those in need through advanced blood bank management technology. Together, we save lives.
-            </p>
             <div className="flex space-x-4">
               {socialLinks.map((social, index) => {
                 const Icon = social.icon;
@@ -146,11 +142,15 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <Mail className="w-4 h-4 text-red-400" />
-                <span>help@bloodconnect.org</span>
+                <span>support@onedrop.app</span>
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <MapPin className="w-4 h-4 text-red-400" />
-                <span>Nationwide Network</span>
+                <span>Head Office: Amaravathi, AP</span>
+              </div>
+              <div className="flex items-center gap-3 text-gray-300">
+                <Shield className="w-4 h-4 text-red-400" />
+                <span>Admin: Kuntrapakam Jishnu</span>
               </div>
             </div>
           </div>
@@ -163,7 +163,7 @@ const Footer = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-gray-400 text-sm">
-              © {currentYear} BloodConnect. All rights reserved. Saving lives through technology.
+              © {currentYear} OneDrop. Admin: Kuntrapakam Jishnu. Head Office: Amaravathi, AP.
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-400">
               <Link to="/privacy" className="hover:text-white transition-colors duration-200">

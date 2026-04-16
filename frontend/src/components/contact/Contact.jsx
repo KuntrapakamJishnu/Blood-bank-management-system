@@ -28,7 +28,7 @@ const Contact = () => {
 
       {/* CONTACT CARDS */}
       <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 px-6">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-10 px-6">
           {/* Phone */}
           <div className="text-center shadow-md p-8 rounded-xl hover:shadow-xl transition">
             <Phone className="w-10 h-10 text-red-600 mx-auto mb-4" />
@@ -41,16 +41,24 @@ const Contact = () => {
           <div className="text-center shadow-md p-8 rounded-xl hover:shadow-xl transition">
             <Mail className="w-10 h-10 text-red-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Email Us</h3>
-            <p className="text-gray-600">support@bloodconnect.org</p>
-            <p className="text-gray-600">info@bloodconnect.org</p>
+            <p className="text-gray-600">support@onedrop.app</p>
+            <p className="text-gray-600">hello@onedrop.app</p>
           </div>
 
           {/* Office */}
           <div className="text-center shadow-md p-8 rounded-xl hover:shadow-xl transition">
             <MapPin className="w-10 h-10 text-red-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Head Office</h3>
-            <p className="text-gray-600">Navi Mumbai, Maharashtra</p>
-            <p className="text-gray-600">India - 410206</p>
+            <p className="text-gray-600">Amaravathi, AP</p>
+            <p className="text-gray-600">India</p>
+          </div>
+
+          {/* Admin */}
+          <div className="text-center shadow-md p-8 rounded-xl hover:shadow-xl transition">
+            <User className="w-10 h-10 text-red-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Admin</h3>
+            <p className="text-gray-600">Kuntrapakam Jishnu</p>
+            <p className="text-gray-600">Platform Administrator</p>
           </div>
         </div>
       </section>
@@ -72,11 +80,15 @@ const Contact = () => {
               </div>
               <div className="flex items-center">
                 <Mail className="text-red-600 mr-3" />
-                <span className="text-gray-700">support@bloodconnect.org</span>
+                <span className="text-gray-700">support@onedrop.app</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="text-red-600 mr-3" />
-                <span className="text-gray-700">Navi Mumbai, Maharashtra</span>
+                <span className="text-gray-700">Amaravathi, AP</span>
+              </div>
+              <div className="flex items-center">
+                <User className="text-red-600 mr-3" />
+                <span className="text-gray-700">Admin: Kuntrapakam Jishnu</span>
               </div>
             </div>
 
@@ -160,7 +172,7 @@ const Contact = () => {
         <iframe
           title="map"
           className="w-full h-96"
-          src="https://maps.google.com/maps?q=Navi%20Mumbai&t=&z=13&ie=UTF8&iwloc=&output=embed"
+          src="https://maps.google.com/maps?q=Amaravathi%2C%20AP&t=&z=13&ie=UTF8&iwloc=&output=embed"
           allowFullScreen
         ></iframe>
       </section>

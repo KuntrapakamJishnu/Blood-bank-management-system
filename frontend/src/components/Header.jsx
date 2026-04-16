@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import bloodLogo from "../assets/blood_logo.png";
 
-const WEBSITE_NAME = import.meta.env.VITE_WEBSITE_NAME;
+const WEBSITE_NAME = import.meta.env.VITE_WEBSITE_NAME || "OneDrop";
 
 export default function Header({ currentUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -68,7 +68,7 @@ export default function Header({ currentUser }) {
               <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-red-500 via-red-600 to-rose-700 p-1.5 shadow-xl group-hover:shadow-red-300/70 transition-all duration-300">
                 <img
                   src={bloodLogo}
-                  alt="Blood Bank Logo"
+                  alt="OneDrop Logo"
                   className="w-full h-full object-contain rounded-lg bg-white/95"
                 />
               </div>
@@ -77,9 +77,6 @@ export default function Header({ currentUser }) {
               <h1 className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-red-600 transition-colors duration-200 leading-tight">
                 {WEBSITE_NAME}
               </h1>
-              <p className="text-sm md:text-base text-gray-600 -mt-0.5 font-semibold leading-tight">
-                Blood Management System
-              </p>
             </div>
           </Link>
 
