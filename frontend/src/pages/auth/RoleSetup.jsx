@@ -1,10 +1,10 @@
-// function RoleSetup() {
+// Legacy role setup prototype kept for reference.
 //   const [role, setRole] = useState("");
 //   const [name, setName] = useState("");
 //   const { user } = useUser(); // Clerk
 
 //   const handleSubmit = async () => {
-//     await axios.post("/api/users/create", {
+//     await axios.post("LEGACY_ENDPOINT", {
 //       clerkId: user.id,
 //       email: user.primaryEmailAddress.emailAddress,
 //       name,

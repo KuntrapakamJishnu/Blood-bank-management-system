@@ -61,8 +61,15 @@ export const approveFacility = async (req, res) => {
     if (!facility) return res.status(404).json({ message: "Facility not found" });
 
     facility.status = "approved";
+    facility.approvedBy = req.user?._id;
+    facility.approvedAt = new Date();
+    facility.rejectionReason = undefined;
 
-    // HISTORY LOGIC DELETED
+    facility.history.push({
+      eventType: "Verification",
+      description: "Facility approved by admin",
+      date: new Date(),
+    });
 
     await facility.save();
 
@@ -84,8 +91,14 @@ export const rejectFacility = async (req, res) => {
 
     facility.status = "rejected";
     facility.rejectionReason = rejectionReason;
+    facility.approvedBy = undefined;
+    facility.approvedAt = undefined;
 
-    // HISTORY LOGIC DELETED
+    facility.history.push({
+      eventType: "Verification",
+      description: `Facility rejected by admin: ${rejectionReason}`,
+      date: new Date(),
+    });
 
     await facility.save();
 

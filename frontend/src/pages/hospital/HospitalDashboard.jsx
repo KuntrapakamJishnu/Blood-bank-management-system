@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+
 const HospitalDashboard = () => {
   const [hospital, setHospital] = useState(null);
   const [bloodStock, setBloodStock] = useState([]);
@@ -62,12 +64,12 @@ const HospitalDashboard = () => {
         }
 
         // Fetch blood stock
-        const stockRes = await axios.get("/api/hospital/blood/stock", {
+        const stockRes = await axios.get(`${API_BASE_URL}/api/hospital/blood/stock`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         // Fetch blood requests
-        const requestsRes = await axios.get("/api/hospital/blood/requests", {
+        const requestsRes = await axios.get(`${API_BASE_URL}/api/hospital/blood/requests`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

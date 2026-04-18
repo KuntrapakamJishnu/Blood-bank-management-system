@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { 
@@ -14,6 +14,8 @@ import {
   Filter,
   Plus
 } from "lucide-react";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const BloodLabDonor = () => {
   const [term, setTerm] = useState("");
@@ -44,7 +46,7 @@ const BloodLabDonor = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `/api/blood-lab/donors/search?term=${term}`,
+        `${API_BASE_URL}/api/blood-lab/donors/search?term=${term}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -61,11 +63,11 @@ const BloodLabDonor = () => {
   };
 
   // Load recent donations and stats
-  const loadRecentDonations = async () => {
+  const loadRecentDonations = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "/api/blood-lab/donations/recent",
+        `${API_BASE_URL}/api/blood-lab/donations/recent`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setRecentDonations(res.data.donations || []);
@@ -73,11 +75,11 @@ const BloodLabDonor = () => {
     } catch (err) {
       console.error("Failed to load recent donations:", err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadRecentDonations();
-  }, []);
+  }, [loadRecentDonations]);
 
   // Open donation form
   const openDonationForm = (donor) => {
@@ -97,7 +99,7 @@ const BloodLabDonor = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `/api/blood-lab/donors/donate/${selectedDonor._id}`,
+        `${API_BASE_URL}/api/blood-lab/donors/donate/${selectedDonor._id}`,
         donationData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

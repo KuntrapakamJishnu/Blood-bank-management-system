@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 const DonorDirectory = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "";
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,7 +65,7 @@ const DonorDirectory = () => {
       }
 
       const res = await axios.get(
-        `/api/hospital/donors?${queryParams}`,
+        `${API_BASE_URL}/api/hospital/donors?${queryParams}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -130,7 +131,7 @@ const DonorDirectory = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `/api/hospital/donors/${donorId}/contact`,
+        `${API_BASE_URL}/api/hospital/donors/${donorId}/contact`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

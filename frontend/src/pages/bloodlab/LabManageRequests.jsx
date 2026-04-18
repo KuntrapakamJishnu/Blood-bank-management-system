@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { CheckCircle, XCircle, Clock, MapPin, Phone } from "lucide-react";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const LabManageRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await axios.get("/api/blood-lab/blood/requests", {
+      const res = await axios.get(`${API_BASE_URL}/api/blood-lab/blood/requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRequests(res.data.requests || []);
@@ -21,18 +23,18 @@ const LabManageRequests = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadRequests();
-  }, []);
+  }, [loadRequests]);
 
   const updateStatus = async (id, action) => {
     try {
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `/api/blood-lab/blood/requests/${id}`,
+        `${API_BASE_URL}/api/blood-lab/blood/requests/${id}`,
         { action },
         { headers: { Authorization: `Bearer ${token}` } }
       );

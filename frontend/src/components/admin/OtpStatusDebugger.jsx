@@ -3,6 +3,7 @@ import { toast } from "react-hot-toast";
 import { CheckCircle, Clock, Shield } from "lucide-react";
 
 const OtpStatusDebugger = ({ className = "", description }) => {
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "";
   const [otpDebugEmail, setOtpDebugEmail] = useState("");
   const [otpDebugPurpose, setOtpDebugPurpose] = useState("register");
   const [otpDebugLoading, setOtpDebugLoading] = useState(false);
@@ -25,7 +26,7 @@ const OtpStatusDebugger = ({ className = "", description }) => {
         return;
       }
 
-      const res = await fetch("/api/auth/otp-status", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/otp-status`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

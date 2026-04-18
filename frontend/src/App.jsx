@@ -18,6 +18,8 @@ const BloodStock = lazy(() => import("./pages/bloodlab/BloodStock"));
 const LabProfile = lazy(() => import("./pages/bloodlab/LabProfile"));
 const GetAllFacilities = lazy(() => import("./pages/admin/GetAllFacilities"));
 const GetAllDonors = lazy(() => import("./pages/admin/GetAllDonors"));
+const AdminDonations = lazy(() => import("./pages/admin/AdminDonations"));
+const AdminCamps = lazy(() => import("./pages/admin/AdminCamps"));
 const DonorCampsList = lazy(() => import("./pages/donor/DonorCampsList"));
 const LabManageRequests = lazy(() => import("./pages/bloodlab/LabManageRequests"));
 const HospitalRequestBlood = lazy(() => import("./pages/hospital/HospitalRequestBlood"));
@@ -65,6 +67,9 @@ function App() {
       
         <Route path="/hospital" element={<ProtectedRoute><DashboardLayout userRole="hospital" /></ProtectedRoute>}>
           <Route index element={<HospitalDashboard />} />
+          <Route path="request-blood" element={<HospitalRequestBlood />} />
+          <Route path="request-history" element={<HospitalRequestHistory />} />
+          <Route path="blood-stock" element={<HospitalBloodStock />} />
           <Route path="blood-request-create" element={<HospitalRequestBlood />} />
           <Route path="blood-request-history" element={<HospitalRequestHistory />} />
           <Route path="inventory" element={<HospitalBloodStock />} />
@@ -85,6 +90,8 @@ function App() {
           <Route path="verification" element={<AdminFacilities />} />
           <Route path="donors" element={<GetAllDonors />} />
           <Route path="facilities" element={<GetAllFacilities />} />
+          <Route path="donations" element={<AdminDonations />} />
+          <Route path="camps" element={<AdminCamps />} />
         </Route>
       </Routes>
     </Suspense>

@@ -3,6 +3,8 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { CheckCircle, XCircle, Clock, MapPin, Calendar } from "lucide-react";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+
 const HospitalRequestHistory = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +14,7 @@ const HospitalRequestHistory = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const res = await axios.get("/api/hospital/blood/requests", {
+        const res = await axios.get(`${API_BASE_URL}/api/hospital/blood/requests`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

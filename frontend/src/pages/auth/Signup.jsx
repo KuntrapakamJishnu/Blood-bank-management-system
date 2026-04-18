@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+
 export default function Register() {
   const [formData, setFormData] = useState({
     name: "",
@@ -18,7 +20,7 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/api/auth/register", formData);
+      await axios.post(`${API_BASE_URL}/api/auth/register`, formData);
       alert("✅ Registered Successfully!");
       navigate("/login"); // redirect after success
     } catch (err) {

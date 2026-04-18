@@ -166,6 +166,8 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       icon: Shield,
       items: [
         { path: "/admin", label: "Overview", icon: BarChart3, badge: null },
+        { path: "/admin/donations", label: "Donations", icon: Droplet, badge: null },
+        { path: "/admin/camps", label: "Blood Camps", icon: Calendar, badge: null },
         {
           path: "/admin/verification",
           label: "Verification",

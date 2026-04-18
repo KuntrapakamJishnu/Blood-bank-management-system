@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Users,
   Hospital,
@@ -17,12 +17,14 @@ import {
 import { toast } from "react-hot-toast";
 import OtpStatusDebugger from "../../components/admin/OtpStatusDebugger";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchStats = async (showToast = false) => {
+  const fetchStats = useCallback(async (showToast = false) => {
     try {
       if (showToast) setRefreshing(true);
 
@@ -34,7 +36,7 @@ const AdminDashboard = () => {
 
       console.log("🔄 Fetching admin dashboard stats...");
       
-      const res = await fetch("/api/admin/dashboard", {
+      const res = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
         headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -63,11 +65,11 @@ const AdminDashboard = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [fetchStats]);
 
   if (loading) {
     return (
