@@ -14,6 +14,7 @@ import hospitalRoutes from "./routes/hospital.routes.js";
 import campRoutes from "./routes/camp.routes.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.middleware.js";
 import sanitizeRequest from "./middleware/sanitize.middleware.js";
+import { responseNormalizer } from "./middleware/response.middleware.js";
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use(express.json({ limit: "1mb" }));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(sanitizeRequest);
 app.use(hpp());
+app.use(responseNormalizer);
 app.use("/api", apiLimiter);
 
 app.get("/api/v1/health", (_req, res) => {
