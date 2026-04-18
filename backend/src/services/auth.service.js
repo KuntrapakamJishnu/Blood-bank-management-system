@@ -2,7 +2,7 @@ import ApiError from "../errors/api-error.js";
 import { signToken } from "../utils/jwt.js";
 import { createUserByRole, findAuthUserByEmail, findProfileByRoleAndId } from "../repositories/auth.repository.js";
 import Otp from "../models/otp.model.js";
-import { deliverOtp, normalizePhoneNumber, verifySmsOtp } from "./otp-delivery.service.js";
+import { deliverOtp, getOtpProviderStatus, normalizePhoneNumber, verifySmsOtp } from "./otp-delivery.service.js";
 
 const OTP_EXPIRY_MINUTES = 10;
 
@@ -188,6 +188,7 @@ export const requestOtpCode = async ({ email, phone, purpose = "register", chann
     message: "OTP sent successfully",
     expiresInMinutes: OTP_EXPIRY_MINUTES,
     delivery,
+    providerStatus: getOtpProviderStatus(),
   };
 
   if (process.env.NODE_ENV !== "production") {
@@ -310,7 +311,12 @@ export const getUserProfile = async ({ role, id }) => {
   if (!user) {
     throw new ApiError(404, "User not found");
   }
-  return { user };
+  return {
+    success: true,
+    message: "Profile fetched successfully",
+    user,
+    data: { user },
+  };
 };
 
 export const getOtpDebugStatus = async ({ email, purpose = "register" }) => {
@@ -322,6 +328,11 @@ export const getOtpDebugStatus = async ({ email, purpose = "register" }) => {
       success: true,
       message: "No OTP record found",
       otp: null,
+      providerStatus: getOtpProviderStatus(),
+      data: {
+        otp: null,
+        providerStatus: getOtpProviderStatus(),
+      },
     };
   }
 
@@ -350,6 +361,29 @@ export const getOtpDebugStatus = async ({ email, purpose = "register" }) => {
       createdAt: otp.createdAt,
       updatedAt: otp.updatedAt,
       ...(process.env.NODE_ENV !== "production" ? { code: otp.code } : {}),
+    },
+    providerStatus: getOtpProviderStatus(),
+    data: {
+      otp: {
+        email: otp.email,
+        phone: otp.phone || null,
+        purpose: otp.purpose,
+        requiredChannels,
+        verified: Boolean(otp.verified),
+        verifiedAt: otp.verifiedAt || null,
+        verifiedChannels: {
+          email: Boolean(otp.emailVerified || otp.verified),
+          sms: Boolean(otp.smsVerified),
+        },
+        emailVerifiedAt: otp.emailVerifiedAt || null,
+        smsVerifiedAt: otp.smsVerifiedAt || null,
+        expiresAt: otp.expiresAt,
+        isExpired: otp.expiresAt ? new Date(otp.expiresAt).getTime() < Date.now() : true,
+        createdAt: otp.createdAt,
+        updatedAt: otp.updatedAt,
+        ...(process.env.NODE_ENV !== "production" ? { code: otp.code } : {}),
+      },
+      providerStatus: getOtpProviderStatus(),
     },
   };
 };

@@ -20,7 +20,9 @@ export const getProfile = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      facility
+      message: "Facility profile fetched successfully",
+      facility,
+      data: { facility },
     });
   } catch (error) {
     console.error("Get Profile Error:", error);
@@ -132,7 +134,8 @@ export const updateProfile = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      facility: updatedFacility
+      facility: updatedFacility,
+      data: { facility: updatedFacility },
     });
 
   } catch (error) {
@@ -194,9 +197,15 @@ export const getFacilityDashboard = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      message: "Facility dashboard fetched successfully",
       facility: facility.name,
       facilityType: facility.facilityType,
       stats: dashboardData,
+      data: {
+        facility: facility.name,
+        facilityType: facility.facilityType,
+        stats: dashboardData,
+      },
     });
   } catch (error) {
     console.error("Facility Dashboard Error:", error);
@@ -216,7 +225,9 @@ export const getAllLabs = async (req, res) => {
 
     res.status(200).json({ 
       success: true, 
-      labs 
+      message: "Blood labs fetched successfully",
+      labs,
+      data: { labs },
     });
   } catch (error) {
     console.error("Get Labs Error:", error);

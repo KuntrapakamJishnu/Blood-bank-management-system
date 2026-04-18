@@ -58,6 +58,15 @@ const getResendClient = () => {
   return resendClient;
 };
 
+const getOtpFromEmail = () => {
+  return (
+    process.env.RESEND_FROM_EMAIL ||
+    process.env.OTP_FROM_EMAIL ||
+    process.env.SMTP_USER ||
+    ""
+  );
+};
+
 const formatPhoneNumber = (phone) => {
   const raw = `${phone || ""}`.trim();
   if (!raw) return "";
@@ -71,15 +80,15 @@ const formatPhoneNumber = (phone) => {
 export const normalizePhoneNumber = (phone) => formatPhoneNumber(phone);
 
 export const sendOtpEmail = async ({ email, code, purpose = "register" }) => {
-  const transporter = getEmailTransporter();
   const resend = getResendClient();
-  const fromEmail = process.env.OTP_FROM_EMAIL;
+  const transporter = getEmailTransporter();
+  const fromEmail = getOtpFromEmail();
 
   if ((!transporter && !resend) || !fromEmail) {
     return {
       channel: "email",
       delivered: false,
-      reason: "Email provider not configured",
+      reason: "Email provider not configured (set RESEND_API_KEY and RESEND_FROM_EMAIL, or SMTP settings)",
     };
   }
 
@@ -87,6 +96,19 @@ export const sendOtpEmail = async ({ email, code, purpose = "register" }) => {
   const text = `Your OTP is ${code}. It expires in 10 minutes.`;
 
   try {
+    // Prefer Resend when configured; use SMTP as fallback.
+    if (resend) {
+      await resend.emails.send({
+        from: fromEmail,
+        to: email,
+        subject,
+        text,
+        html: `<p>Your OTP is <strong>${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
+      });
+
+      return { channel: "email", delivered: true, provider: "resend" };
+    }
+
     if (transporter) {
       await transporter.sendMail({
         from: fromEmail,
@@ -95,17 +117,15 @@ export const sendOtpEmail = async ({ email, code, purpose = "register" }) => {
         text,
         html: `<p>Your OTP is <strong>${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
       });
-    } else {
-      await resend.emails.send({
-        from: fromEmail,
-        to: email,
-        subject,
-        text,
-        html: `<p>Your OTP is <strong>${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
-      });
-    }
 
-    return { channel: "email", delivered: true };
+      return { channel: "email", delivered: true, provider: "smtp" };
+    } else {
+      return {
+        channel: "email",
+        delivered: false,
+        reason: "No email provider available",
+      };
+    }
   } catch (error) {
     return {
       channel: "email",
@@ -211,6 +231,33 @@ export const deliverOtp = async ({ email, phone, code, purpose, channel = "both"
     delivered: results.some((item) => item.delivered),
     channels: results.filter((item) => item.delivered).map((item) => item.channel),
     results,
+  };
+};
+
+export const getOtpProviderStatus = () => {
+  const resendConfigured = Boolean(process.env.RESEND_API_KEY && getOtpFromEmail());
+  const smtpConfigured = Boolean(
+    process.env.SMTP_HOST &&
+      process.env.SMTP_PORT &&
+      process.env.SMTP_USER &&
+      process.env.SMTP_PASS
+  );
+  const twilioClientConfigured = Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN);
+  const twilioVerifyConfigured = Boolean(process.env.TWILIO_VERIFY_SERVICE_SID);
+  const twilioProgrammableConfigured = Boolean(process.env.TWILIO_FROM_NUMBER);
+
+  return {
+    email: {
+      resendConfigured,
+      smtpConfigured,
+      fromEmail: Boolean(getOtpFromEmail()),
+      providerPriority: ["resend", "smtp"],
+    },
+    sms: {
+      twilioClientConfigured,
+      twilioVerifyConfigured,
+      twilioProgrammableConfigured,
+    },
   };
 };
 

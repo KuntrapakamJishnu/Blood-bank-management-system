@@ -25,7 +25,12 @@ router.post("/", authenticate, authorize("hospital", "admin"), async (req, res) 
 
         await camp.save();
 
-        res.status(201).json({ success: true, message: "Camp created successfully", camp });
+        res.status(201).json({
+            success: true,
+            message: "Camp created successfully",
+            camp,
+            data: { camp },
+        });
     } catch (error) {
         console.error("Create camp error:", error);
         res.status(500).json({ success: false, message: "Server error while creating camp" });
@@ -39,7 +44,12 @@ router.get("/", authenticate, async (req, res) => {
             .populate("hospital", "name address phone")
             .sort({ date: 1 });
 
-        res.json({ success: true, camps });
+        res.json({
+            success: true,
+            message: "Camps fetched successfully",
+            camps,
+            data: { camps },
+        });
     } catch (error) {
         console.error("Get camps error:", error);
         res.status(500).json({ success: false, message: "Server error while fetching camps" });
@@ -50,7 +60,12 @@ router.get("/", authenticate, async (req, res) => {
 router.get("/my-camps", authenticate, authorize("hospital", "admin"), async (req, res) => {
     try {
         const camps = await Camp.find({ hospital: req.user._id }).sort({ date: -1 });
-        res.json({ success: true, camps });
+        res.json({
+            success: true,
+            message: "Facility camps fetched successfully",
+            camps,
+            data: { camps },
+        });
     } catch (error) {
         console.error("Get hospital camps error:", error);
         res.status(500).json({ success: false, message: "Server error while fetching hospital camps" });
@@ -70,7 +85,12 @@ router.put("/:id", authenticate, authorize("hospital", "admin"), async (req, res
             return res.status(404).json({ success: false, message: "Camp not found" });
         }
 
-        res.json({ success: true, message: "Camp updated successfully", camp });
+        res.json({
+            success: true,
+            message: "Camp updated successfully",
+            camp,
+            data: { camp },
+        });
     } catch (error) {
         console.error("Update camp error:", error);
         res.status(500).json({ success: false, message: "Server error while updating camp" });
@@ -86,7 +106,11 @@ router.delete("/:id", authenticate, authorize("hospital", "admin"), async (req, 
             return res.status(404).json({ success: false, message: "Camp not found" });
         }
 
-        res.json({ success: true, message: "Camp deleted successfully" });
+        res.json({
+            success: true,
+            message: "Camp deleted successfully",
+            data: null,
+        });
     } catch (error) {
         console.error("Delete camp error:", error);
         res.status(500).json({ success: false, message: "Server error while deleting camp" });

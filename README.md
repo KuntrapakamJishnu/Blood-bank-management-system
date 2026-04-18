@@ -122,21 +122,25 @@ node src/seedAdmin.js
 
 The project now supports real OTP delivery through:
 
-- SMTP email provider (SendGrid SMTP, Mailgun SMTP, SES SMTP, etc.)
+- Resend email API (preferred)
+- SMTP email provider (optional fallback)
 - Twilio SMS
 
 ### Backend Environment Variables
 
 Set these in [backend/.env.example](backend/.env.example):
 
-- `OTP_FROM_EMAIL`
-- `SMTP_HOST`
-- `SMTP_PORT`
-- `SMTP_USER`
-- `SMTP_PASS`
-- `SMTP_SECURE`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL` (preferred sender)
+- `OTP_FROM_EMAIL` (fallback sender)
+- `SMTP_HOST` (optional fallback)
+- `SMTP_PORT` (optional fallback)
+- `SMTP_USER` (optional fallback)
+- `SMTP_PASS` (optional fallback)
+- `SMTP_SECURE` (optional fallback)
 - `TWILIO_ACCOUNT_SID`
 - `TWILIO_AUTH_TOKEN`
+- `TWILIO_VERIFY_SERVICE_SID` (recommended for production SMS verification)
 - `TWILIO_FROM_NUMBER`
 
 ### OTP API Usage
@@ -155,6 +159,8 @@ Set these in [backend/.env.example](backend/.env.example):
 
 In `development`, the response may include `devOtp` for local testing.
 In `production`, OTP delivery must succeed through configured providers.
+
+Delivery response now includes `providerStatus` so you can quickly verify whether email/SMS providers are configured correctly.
 
 ### Docker Compose
 
