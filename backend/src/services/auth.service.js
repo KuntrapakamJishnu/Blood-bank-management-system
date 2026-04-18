@@ -2,7 +2,7 @@ import ApiError from "../errors/api-error.js";
 import { signToken } from "../utils/jwt.js";
 import { createUserByRole, findAuthUserByEmail, findProfileByRoleAndId } from "../repositories/auth.repository.js";
 import Otp from "../models/otp.model.js";
-import { deliverOtp } from "./otp-delivery.service.js";
+import { deliverOtp, normalizePhoneNumber, verifySmsOtp } from "./otp-delivery.service.js";
 
 const OTP_EXPIRY_MINUTES = 10;
 
@@ -21,6 +21,11 @@ const toPoint = (payload) => {
 
 const buildOtpCode = () => `${Math.floor(100000 + Math.random() * 900000)}`;
 
+const channelsFromRequest = (channel) => {
+  if (channel === "both") return ["email", "sms"];
+  return [channel];
+};
+
 const ensureOtpVerifiedForRegistration = async (email) => {
   const normalizedEmail = email.toLowerCase();
   const otp = await Otp.findOne({ email: normalizedEmail, purpose: "register" });
@@ -31,6 +36,22 @@ const ensureOtpVerifiedForRegistration = async (email) => {
 
   if (otp.expiresAt.getTime() < Date.now()) {
     throw new ApiError(400, "OTP expired. Request a new OTP");
+  }
+
+  // Backward compatibility for OTP documents created before channel-specific flags existed.
+  if (!Array.isArray(otp.requiredChannels) || otp.requiredChannels.length === 0) {
+    if (!otp.verified) {
+      throw new ApiError(400, "OTP not verified. Please verify OTP to continue");
+    }
+    return;
+  }
+
+  if (otp.requiredChannels.includes("email") && !otp.emailVerified) {
+    throw new ApiError(400, "Email OTP is not verified");
+  }
+
+  if (otp.requiredChannels.includes("sms") && !otp.smsVerified) {
+    throw new ApiError(400, "SMS OTP is not verified");
   }
 
   if (!otp.verified) {
@@ -44,6 +65,31 @@ const getRedirect = (role) => {
   if (role === "blood-lab") return "/lab";
   if (role === "admin") return "/admin";
   return "/";
+};
+
+const hasValidPointCoordinates = (coordinates) => {
+  return (
+    Array.isArray(coordinates) &&
+    coordinates.length === 2 &&
+    coordinates.every((value) => Number.isFinite(Number(value)))
+  );
+};
+
+const sanitizeGeoLocation = (user) => {
+  const location = user?.address?.location;
+  if (!location) return;
+
+  if (location.type === "Point" && hasValidPointCoordinates(location.coordinates)) {
+    user.address.location = {
+      type: "Point",
+      coordinates: [Number(location.coordinates[0]), Number(location.coordinates[1])],
+    };
+    return;
+  }
+
+  // Legacy documents may contain { type: "Point" } without coordinates.
+  // Remove invalid location so 2dsphere index updates do not fail on login/profile updates.
+  user.address.location = undefined;
 };
 
 export const registerUser = async (payload) => {
@@ -98,6 +144,8 @@ export const registerUser = async (payload) => {
 
 export const requestOtpCode = async ({ email, phone, purpose = "register", channel = "both" }) => {
   const normalizedEmail = email.toLowerCase();
+  const normalizedPhone = phone ? normalizePhoneNumber(phone) : undefined;
+  const requiredChannels = channelsFromRequest(channel);
   const code = buildOtpCode();
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
@@ -107,13 +155,24 @@ export const requestOtpCode = async ({ email, phone, purpose = "register", chann
 
   await Otp.findOneAndUpdate(
     { email: normalizedEmail, purpose },
-    { code, expiresAt, verified: false, verifiedAt: null },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    {
+      code,
+      phone: normalizedPhone,
+      requiredChannels,
+      emailVerified: !requiredChannels.includes("email"),
+      smsVerified: !requiredChannels.includes("sms"),
+      emailVerifiedAt: null,
+      smsVerifiedAt: null,
+      expiresAt,
+      verified: false,
+      verifiedAt: null,
+    },
+    { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
   );
 
   const delivery = await deliverOtp({
     email: normalizedEmail,
-    phone,
+    phone: normalizedPhone,
     code,
     purpose,
     channel,
@@ -132,13 +191,15 @@ export const requestOtpCode = async ({ email, phone, purpose = "register", chann
   };
 
   if (process.env.NODE_ENV !== "production") {
-    response.devOtp = code;
+    if (requiredChannels.includes("email") || !process.env.TWILIO_VERIFY_SERVICE_SID) {
+      response.devOtp = code;
+    }
   }
 
   return response;
 };
 
-export const verifyOtpCode = async ({ email, code, purpose = "register" }) => {
+export const verifyOtpCode = async ({ email, phone, channel = "email", code, purpose = "register" }) => {
   const normalizedEmail = email.toLowerCase();
 
   const otp = await Otp.findOne({ email: normalizedEmail, purpose });
@@ -150,17 +211,54 @@ export const verifyOtpCode = async ({ email, code, purpose = "register" }) => {
     throw new ApiError(400, "OTP expired. Request a new OTP");
   }
 
-  if (otp.code !== code) {
-    throw new ApiError(400, "Invalid OTP code");
+  if (channel === "email") {
+    if (otp.code !== code) {
+      throw new ApiError(400, "Invalid OTP code");
+    }
+
+    otp.emailVerified = true;
+    otp.emailVerifiedAt = new Date();
+  } else {
+    const smsPhone = normalizePhoneNumber(phone || otp.phone);
+    if (!smsPhone) {
+      throw new ApiError(400, "Phone number is required for SMS OTP verification");
+    }
+
+    if (process.env.TWILIO_VERIFY_SERVICE_SID) {
+      const smsVerification = await verifySmsOtp({ phone: smsPhone, code });
+      if (!smsVerification.verified) {
+        throw new ApiError(400, smsVerification.reason || "Invalid OTP code");
+      }
+    } else if (otp.code !== code) {
+      throw new ApiError(400, "Invalid OTP code");
+    }
+
+    otp.smsVerified = true;
+    otp.smsVerifiedAt = new Date();
+    otp.phone = smsPhone;
   }
 
-  otp.verified = true;
-  otp.verifiedAt = new Date();
+  const requiredChannels = Array.isArray(otp.requiredChannels) && otp.requiredChannels.length
+    ? otp.requiredChannels
+    : ["email"];
+
+  const emailOk = !requiredChannels.includes("email") || otp.emailVerified;
+  const smsOk = !requiredChannels.includes("sms") || otp.smsVerified;
+
+  otp.verified = emailOk && smsOk;
+  otp.verifiedAt = otp.verified ? new Date() : null;
   await otp.save();
 
   return {
     success: true,
-    message: "OTP verified successfully",
+    message: otp.verified
+      ? "OTP verified successfully"
+      : `${channel.toUpperCase()} OTP verified. Verify remaining channel(s) to continue registration`,
+    verifiedChannels: {
+      email: Boolean(otp.emailVerified),
+      sms: Boolean(otp.smsVerified),
+    },
+    allRequiredVerified: Boolean(otp.verified),
   };
 };
 
@@ -184,6 +282,7 @@ export const loginUser = async ({ email, password }) => {
     }
   }
 
+  sanitizeGeoLocation(user);
   user.lastLogin = new Date();
   if (Array.isArray(user.history)) {
     user.history.push({
@@ -212,4 +311,45 @@ export const getUserProfile = async ({ role, id }) => {
     throw new ApiError(404, "User not found");
   }
   return { user };
+};
+
+export const getOtpDebugStatus = async ({ email, purpose = "register" }) => {
+  const normalizedEmail = email.toLowerCase();
+  const otp = await Otp.findOne({ email: normalizedEmail, purpose }).lean();
+
+  if (!otp) {
+    return {
+      success: true,
+      message: "No OTP record found",
+      otp: null,
+    };
+  }
+
+  const requiredChannels = Array.isArray(otp.requiredChannels) && otp.requiredChannels.length
+    ? otp.requiredChannels
+    : ["email"];
+
+  return {
+    success: true,
+    message: "OTP status fetched",
+    otp: {
+      email: otp.email,
+      phone: otp.phone || null,
+      purpose: otp.purpose,
+      requiredChannels,
+      verified: Boolean(otp.verified),
+      verifiedAt: otp.verifiedAt || null,
+      verifiedChannels: {
+        email: Boolean(otp.emailVerified || otp.verified),
+        sms: Boolean(otp.smsVerified),
+      },
+      emailVerifiedAt: otp.emailVerifiedAt || null,
+      smsVerifiedAt: otp.smsVerifiedAt || null,
+      expiresAt: otp.expiresAt,
+      isExpired: otp.expiresAt ? new Date(otp.expiresAt).getTime() < Date.now() : true,
+      createdAt: otp.createdAt,
+      updatedAt: otp.updatedAt,
+      ...(process.env.NODE_ENV !== "production" ? { code: otp.code } : {}),
+    },
+  };
 };

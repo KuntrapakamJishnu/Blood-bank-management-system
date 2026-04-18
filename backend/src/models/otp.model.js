@@ -21,6 +21,29 @@ const otpSchema = new mongoose.Schema(
       minlength: 6,
       maxlength: 6,
     },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    requiredChannels: {
+      type: [String],
+      enum: ["email", "sms"],
+      default: ["email"],
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    smsVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerifiedAt: {
+      type: Date,
+    },
+    smsVerifiedAt: {
+      type: Date,
+    },
     expiresAt: {
       type: Date,
       required: true,

@@ -83,6 +83,24 @@ export const otpRequestSchema = z.object({
 
 export const otpVerifySchema = z.object({
   email: z.string().email("Valid email is required"),
+  phone: z
+    .string()
+    .regex(/^(\+91|91)?[6-9][0-9]{9}$/, "Valid phone number is required")
+    .optional(),
+  channel: z.enum(["email", "sms"]).default("email"),
   code: z.string().regex(/^[0-9]{6}$/, "OTP must be a 6-digit code"),
+  purpose: z.enum(["register"]).default("register"),
+}).superRefine((value, ctx) => {
+  if (value.channel === "sms" && !value.phone) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Phone is required when channel is sms",
+      path: ["phone"],
+    });
+  }
+});
+
+export const otpStatusSchema = z.object({
+  email: z.string().email("Valid email is required"),
   purpose: z.enum(["register"]).default("register"),
 });

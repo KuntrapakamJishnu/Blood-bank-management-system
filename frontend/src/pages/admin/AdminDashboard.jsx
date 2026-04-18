@@ -12,10 +12,10 @@ import {
   ArrowRight,
   RefreshCw,
   AlertTriangle,
-  CheckCircle,
   Clock,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import OtpStatusDebugger from "../../components/admin/OtpStatusDebugger";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -433,6 +433,11 @@ const AdminDashboard = () => {
             />
           </div>
         </div>
+
+        <OtpStatusDebugger
+          className="mb-8"
+          description="Admin tool to inspect email and SMS OTP verification state before registration."
+        />
 
         {/* Recent Activity Section */}
         {stats.recentActivity && stats.recentActivity.length > 0 && (

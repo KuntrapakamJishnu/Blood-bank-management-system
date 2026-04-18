@@ -16,6 +16,7 @@ import {
   RefreshCw,
   AlertCircle,
 } from "lucide-react";
+import OtpStatusDebugger from "../../components/admin/OtpStatusDebugger";
 
 const FacilityApproval = () => {
   const [facilities, setFacilities] = useState([]);
@@ -302,6 +303,11 @@ const FacilityApproval = () => {
               </div>
             </div>
           </div>
+
+          <OtpStatusDebugger
+            className="mt-6"
+            description="Inspect email and SMS OTP verification state before registration approval."
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

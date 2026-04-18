@@ -49,12 +49,11 @@ const facilitySchema = new mongoose.Schema(
         type: {
           type: String,
           enum: ["Point"],
-          default: "Point"
         },
         coordinates: {
           type: [Number],
           validate: {
-            validator: (value) => !value || value.length === 2,
+            validator: (value) => !value || (value.length === 2 && value.every((num) => Number.isFinite(num))),
             message: "Location coordinates must contain [longitude, latitude]"
           }
         }

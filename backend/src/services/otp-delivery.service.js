@@ -1,8 +1,10 @@
 import nodemailer from "nodemailer";
 import twilio from "twilio";
+import { Resend } from "resend";
 
 let mailTransporter;
 let twilioClient;
+let resendClient;
 
 const getEmailTransporter = () => {
   if (mailTransporter) return mailTransporter;
@@ -44,6 +46,18 @@ const getTwilioClient = () => {
   return twilioClient;
 };
 
+const getResendClient = () => {
+  if (resendClient) return resendClient;
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+
+  resendClient = new Resend(apiKey);
+  return resendClient;
+};
+
 const formatPhoneNumber = (phone) => {
   const raw = `${phone || ""}`.trim();
   if (!raw) return "";
@@ -54,11 +68,14 @@ const formatPhoneNumber = (phone) => {
   return raw;
 };
 
+export const normalizePhoneNumber = (phone) => formatPhoneNumber(phone);
+
 export const sendOtpEmail = async ({ email, code, purpose = "register" }) => {
   const transporter = getEmailTransporter();
+  const resend = getResendClient();
   const fromEmail = process.env.OTP_FROM_EMAIL;
 
-  if (!transporter || !fromEmail) {
+  if ((!transporter && !resend) || !fromEmail) {
     return {
       channel: "email",
       delivered: false,
@@ -69,27 +86,74 @@ export const sendOtpEmail = async ({ email, code, purpose = "register" }) => {
   const subject = purpose === "register" ? "Your registration OTP" : "Your OTP code";
   const text = `Your OTP is ${code}. It expires in 10 minutes.`;
 
-  await transporter.sendMail({
-    from: fromEmail,
-    to: email,
-    subject,
-    text,
-    html: `<p>Your OTP is <strong>${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
-  });
+  try {
+    if (transporter) {
+      await transporter.sendMail({
+        from: fromEmail,
+        to: email,
+        subject,
+        text,
+        html: `<p>Your OTP is <strong>${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
+      });
+    } else {
+      await resend.emails.send({
+        from: fromEmail,
+        to: email,
+        subject,
+        text,
+        html: `<p>Your OTP is <strong>${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
+      });
+    }
 
-  return { channel: "email", delivered: true };
+    return { channel: "email", delivered: true };
+  } catch (error) {
+    return {
+      channel: "email",
+      delivered: false,
+      reason: error?.message || "Email delivery failed",
+    };
+  }
 };
 
 export const sendOtpSms = async ({ phone, code, purpose = "register" }) => {
   const client = getTwilioClient();
   const fromNumber = process.env.TWILIO_FROM_NUMBER;
+  const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
   const to = formatPhoneNumber(phone);
 
-  if (!client || !fromNumber) {
+  if (!client) {
     return {
       channel: "sms",
       delivered: false,
       reason: "SMS provider not configured",
+    };
+  }
+
+  if (verifyServiceSid) {
+    try {
+      const verification = await client.verify.v2
+        .services(verifyServiceSid)
+        .verifications.create({ to, channel: "sms" });
+
+      return {
+        channel: "sms",
+        delivered: verification.status === "pending",
+        provider: "twilio-verify",
+      };
+    } catch (error) {
+      return {
+        channel: "sms",
+        delivered: false,
+        reason: error?.message || "SMS delivery failed",
+      };
+    }
+  }
+
+  if (!fromNumber) {
+    return {
+      channel: "sms",
+      delivered: false,
+      reason: "TWILIO_FROM_NUMBER missing for programmable SMS",
     };
   }
 
@@ -98,13 +162,21 @@ export const sendOtpSms = async ({ phone, code, purpose = "register" }) => {
       ? `Your Blood Bank registration OTP is ${code}. Valid for 10 minutes.`
       : `Your OTP is ${code}. Valid for 10 minutes.`;
 
-  await client.messages.create({
-    body: message,
-    from: fromNumber,
-    to,
-  });
+  try {
+    await client.messages.create({
+      body: message,
+      from: fromNumber,
+      to,
+    });
 
-  return { channel: "sms", delivered: true };
+    return { channel: "sms", delivered: true };
+  } catch (error) {
+    return {
+      channel: "sms",
+      delivered: false,
+      reason: error?.message || "SMS delivery failed",
+    };
+  }
 };
 
 export const deliverOtp = async ({ email, phone, code, purpose, channel = "both" }) => {
@@ -140,4 +212,37 @@ export const deliverOtp = async ({ email, phone, code, purpose, channel = "both"
     channels: results.filter((item) => item.delivered).map((item) => item.channel),
     results,
   };
+};
+
+export const verifySmsOtp = async ({ phone, code }) => {
+  const client = getTwilioClient();
+  const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+  const to = formatPhoneNumber(phone);
+
+  if (!client || !verifyServiceSid) {
+    return {
+      verified: false,
+      reason: "Twilio Verify is not configured",
+    };
+  }
+
+  try {
+    const check = await client.verify.v2
+      .services(verifyServiceSid)
+      .verificationChecks.create({ to, code });
+
+    if (check.status !== "approved") {
+      return {
+        verified: false,
+        reason: "Invalid OTP code",
+      };
+    }
+
+    return { verified: true };
+  } catch (error) {
+    return {
+      verified: false,
+      reason: error?.message || "Unable to verify SMS OTP",
+    };
+  }
 };
