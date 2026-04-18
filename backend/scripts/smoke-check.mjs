@@ -1,15 +1,41 @@
+import "dotenv/config";
+import mongoose from "mongoose";
+import Otp from "../src/models/otp.model.js";
+
 const base = "http://localhost:5000";
 const now = Date.now();
 const donorEmail = `test.donor.${now}@example.com`;
 const facilityEmail = `test.hospital.${now}@example.com`;
 
+const uniquePhone = (offset = 0) => {
+  const suffix = String((now + offset) % 1000000000).padStart(9, "0");
+  return `9${suffix}`;
+};
+
+let dbConnected = false;
+
+const getOtpFromDb = async (email) => {
+  if (!process.env.MONGO_URI) return null;
+
+  if (!dbConnected) {
+    await mongoose.connect(process.env.MONGO_URI);
+    dbConnected = true;
+  }
+
+  const otpDoc = await Otp.findOne({ email: email.toLowerCase(), purpose: "register" })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return otpDoc?.code || null;
+};
+
 const donorPayload = {
   role: "donor",
-  fullName: "Smoke Donor",
+  fullName: "Vishnu Kumar",
   email: donorEmail,
   password: "Password@123",
-  phone: "9876543211",
-  emergencyContact: "9876543212",
+  phone: uniquePhone(101),
+  emergencyContact: uniquePhone(102),
   age: 25,
   gender: "Male",
   bloodGroup: "O+",
@@ -25,11 +51,11 @@ const donorPayload = {
 const facilityPayload = {
   role: "hospital",
   facilityType: "hospital",
-  name: `Smoke General Hospital ${now}`,
+  name: `Amaravathi General Hospital ${now}`,
   email: facilityEmail,
   password: "Password@123",
-  phone: "9876543213",
-  emergencyContact: "9876543214",
+  phone: uniquePhone(201),
+  emergencyContact: uniquePhone(202),
   registrationNumber: `SGH${now}`,
   address: {
     street: "456 Test Ave",
@@ -85,7 +111,7 @@ async function req(path, { method = "GET", body, token } = {}) {
       body: { email: donorEmail, channel: "email", purpose: "register" },
     });
     push("POST /api/auth/request-otp donor", r.status === 200 && r.data?.success === true, `status=${r.status}`);
-    const donorOtp = r.data?.devOtp;
+    const donorOtp = r.data?.devOtp || (await getOtpFromDb(donorEmail));
 
     r = await req("/api/auth/verify-otp", {
       method: "POST",
@@ -113,7 +139,7 @@ async function req(path, { method = "GET", body, token } = {}) {
       body: { email: facilityEmail, channel: "email", purpose: "register" },
     });
     push("POST /api/auth/request-otp facility", r.status === 200 && r.data?.success === true, `status=${r.status}`);
-    const facilityOtp = r.data?.devOtp;
+    const facilityOtp = r.data?.devOtp || (await getOtpFromDb(facilityEmail));
 
     r = await req("/api/auth/verify-otp", {
       method: "POST",
@@ -136,7 +162,7 @@ async function req(path, { method = "GET", body, token } = {}) {
 
     let facilityToken = null;
     if (adminToken) {
-      const facilityList = await req("/api/admin/facilities", { token: adminToken });
+      const facilityList = await req("/api/admin/facilities?includeTestData=true", { token: adminToken });
       push("GET /api/admin/facilities", facilityList.status === 200, `status=${facilityList.status}`);
 
       const createdFacility = facilityList.data?.facilities?.find((f) => f.email === facilityEmail);
@@ -180,7 +206,7 @@ async function req(path, { method = "GET", body, token } = {}) {
       method: "POST",
       body: {
         email: `sms.${now}@example.com`,
-        phone: "9876543210",
+        phone: uniquePhone(301),
         channel: "both",
         purpose: "register",
       },
@@ -193,6 +219,10 @@ async function req(path, { method = "GET", body, token } = {}) {
     );
   } catch (error) {
     push("Smoke script runtime", false, error.message);
+  } finally {
+    if (dbConnected) {
+      await mongoose.disconnect();
+    }
   }
 
   const failed = checks.filter((check) => !check.ok);
