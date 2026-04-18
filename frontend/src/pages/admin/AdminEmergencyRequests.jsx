@@ -51,7 +51,7 @@ const AdminEmergencyRequests = () => {
     };
 
     fetchRequests();
-  }, [adminStatus, page]);
+  }, [adminStatus, page, token]);
 
   const handleApprove = async () => {
     if (!selectedRequest) return;

@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { MessageCircle, Send, X, Clock, User } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { MessageCircle, Send, X, Clock } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -22,6 +22,25 @@ const ChatModal = ({ facilityId, facilityName, onClose }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const fetchMessages = useCallback(async (threadId) => {
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/chat/${threadId}/messages?page=1&limit=50`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to fetch messages");
+
+      const data = await res.json();
+      setMessages(data.data.messages || []);
+    } catch (err) {
+      console.error("Fetch messages error:", err);
+      toast.error("Failed to load messages");
+    }
+  }, [token]);
 
   // Initialize or get chat thread
   useEffect(() => {
@@ -53,26 +72,7 @@ const ChatModal = ({ facilityId, facilityName, onClose }) => {
     if (facilityId) {
       initializeChat();
     }
-  }, [facilityId]);
-
-  const fetchMessages = async (threadId) => {
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/chat/${threadId}/messages?page=1&limit=50`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed to fetch messages");
-
-      const data = await res.json();
-      setMessages(data.data.messages || []);
-    } catch (err) {
-      console.error("Fetch messages error:", err);
-      toast.error("Failed to load messages");
-    }
-  };
+  }, [facilityId, token, fetchMessages]);
 
   const sendMessage = async (e) => {
     e.preventDefault();

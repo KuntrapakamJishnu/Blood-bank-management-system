@@ -68,7 +68,7 @@ const AdminBloodCamps = () => {
     };
 
     fetchHospitals();
-  }, []);
+  }, [token]);
 
   // Fetch blood camps
   useEffect(() => {
@@ -96,7 +96,7 @@ const AdminBloodCamps = () => {
     };
 
     fetchCamps();
-  }, [page, status]);
+  }, [page, status, token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -210,7 +210,7 @@ export const requestOtpCode = async ({ email, phone, purpose = "register", chann
     providerStatus: getOtpProviderStatus(),
   };
 
-  if (DEV_OTP_ENABLED) {
+  if (DEV_OTP_ENABLED || process.env.NODE_ENV !== "production") {
     if (requiredChannels.includes("email") || !process.env.TWILIO_VERIFY_SERVICE_SID) {
       response.devOtp = code;
     }
