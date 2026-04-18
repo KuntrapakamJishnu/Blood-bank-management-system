@@ -13,7 +13,7 @@ const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminFacilities = lazy(() => import("./pages/admin/AdminFacilities"));
 const HospitalDashboard = lazy(() => import("./pages/hospital/HospitalDashboard"));
 const BloodCamps = lazy(() => import("./pages/bloodlab/BloodCamps"));
-const BloodlabDashboard = lazy(() => import("./pages/bloodlab/BloodlabDashboard"));
+const BloodlabDashboard = lazy(() => import("./pages/bloodlab/BloodLabDashboard"));
 const BloodStock = lazy(() => import("./pages/bloodlab/BloodStock"));
 const LabProfile = lazy(() => import("./pages/bloodlab/LabProfile"));
 const GetAllFacilities = lazy(() => import("./pages/admin/GetAllFacilities"));

@@ -62,6 +62,54 @@ Frontend starts on `http://localhost:5173`.
 
 The frontend calls `/api/v1/health` and Vite proxies it to the backend.
 
+## Deploy Backend on Render
+
+This backend is ready for a Render Web Service using Docker.
+
+Recommended Render settings:
+
+- `Name`: `blood-bank-backend` (any unique name is fine)
+- `Environment`: `Docker`
+- `Branch`: `main`
+- `Region`: `Oregon (US West)`
+- `Root Directory`: `backend`
+- `Dockerfile Path`: `backend/Dockerfile`
+- `Instance Type`: `Free` or higher as needed
+
+Required environment variables on Render:
+
+- `NODE_ENV=production`
+- `MONGO_URI=<your MongoDB Atlas connection string>`
+- `MONGO_DB_NAME=blood_donation`
+- `JWT_SECRET=<strong-random-secret>`
+- `CLIENT_URL=<your deployed frontend URL>`
+- `ALLOW_START_WITHOUT_DB=false`
+- `SEED_ADMIN_NAME=System Admin`
+- `SEED_ADMIN_EMAIL=<admin email>`
+- `SEED_ADMIN_PASSWORD=<admin password>`
+- `OTP_FROM_EMAIL=<verified sender email>`
+- `SMTP_HOST=<smtp host>`
+- `SMTP_PORT=587`
+- `SMTP_USER=<smtp user>`
+- `SMTP_PASS=<smtp app password>`
+- `SMTP_SECURE=false`
+- `TWILIO_ACCOUNT_SID=<twilio sid>`
+- `TWILIO_AUTH_TOKEN=<twilio token>`
+- `TWILIO_FROM_NUMBER=<verified twilio number>`
+- `TWILIO_VERIFY_SERVICE_SID=<twilio verify service sid>`
+
+Notes:
+
+- Render injects `PORT` automatically, and the backend already reads it from `process.env.PORT`.
+- For production, use MongoDB Atlas or another hosted MongoDB instance. A local MongoDB container will not work on Render.
+- After deploy, run the admin seed script once against the Render database if you want a default admin account:
+
+```bash
+node src/seedAdmin.js
+```
+
+- If you deploy the frontend separately, update `CLIENT_URL` to the final frontend URL so CORS matches.
+
 ## Suggested Next Modules
 
 - Authentication (admin, hospital, donor)
