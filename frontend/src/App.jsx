@@ -28,6 +28,8 @@ const DonorDirectory = lazy(() => import("./pages/hospital/DonorDirectory"));
 const About = lazy(() => import("./components/about/About"));
 const Contact = lazy(() => import("./components/contact/Contact"));
 const DonorDonationHistory = lazy(() => import("./pages/donor/DonorDonationHistory"));
+const StaticInfoPage = lazy(() => import("./components/StaticInfoPage"));
+const ForgotPassword = lazy(() => import("./pages/user/ForgotPassowrd"));
 
 function App() {
   return (
@@ -40,6 +42,19 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/mission" element={<StaticInfoPage />} />
+        <Route path="/stories" element={<StaticInfoPage />} />
+        <Route path="/news" element={<StaticInfoPage />} />
+        <Route path="/eligibility" element={<StaticInfoPage />} />
+        <Route path="/process" element={<StaticInfoPage />} />
+        <Route path="/benefits" element={<StaticInfoPage />} />
+        <Route path="/request-blood" element={<StaticInfoPage />} />
+        <Route path="/inventory" element={<StaticInfoPage />} />
+        <Route path="/emergency" element={<StaticInfoPage />} />
+        <Route path="/privacy" element={<StaticInfoPage />} />
+        <Route path="/terms" element={<StaticInfoPage />} />
+        <Route path="/cookies" element={<StaticInfoPage />} />
 
         <Route path="/donor" element={<ProtectedRoute><DashboardLayout userRole="donor" /></ProtectedRoute>}>
           <Route index element={<DonorDashboard />} />

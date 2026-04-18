@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import bloodLogo from "../../assets/blood_logo.png";
@@ -167,12 +168,25 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-gray-600 text-sm">
-          Don't have an account?{" "}
-          <a href="/" className="text-red-600 font-medium hover:underline">
-            Register
-          </a>
-        </p>
+        <div className="mt-6 space-y-3 text-center text-sm text-gray-600">
+          <div>
+            Don't have an account?{" "}
+            <Link
+              to="/register/donor"
+              className="text-red-600 font-medium hover:underline"
+            >
+              Register
+            </Link>
+          </div>
+          <div>
+            <Link
+              to="/forgot-password"
+              className="text-red-600 font-medium hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
