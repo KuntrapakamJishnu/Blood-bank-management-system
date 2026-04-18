@@ -1,6 +1,12 @@
 import ApiError from "../errors/api-error.js";
 import { signToken } from "../utils/jwt.js";
-import { createUserByRole, findAuthUserByEmail, findProfileByRoleAndId } from "../repositories/auth.repository.js";
+import {
+  createUserByRole,
+  findAnyUserByEmail,
+  findAnyUserByPhone,
+  findAuthUserByEmail,
+  findProfileByRoleAndId,
+} from "../repositories/auth.repository.js";
 import Otp from "../models/otp.model.js";
 import { deliverOtp, getOtpProviderStatus, normalizePhoneNumber, verifySmsOtp } from "./otp-delivery.service.js";
 
@@ -25,6 +31,13 @@ const buildOtpCode = () => `${Math.floor(100000 + Math.random() * 900000)}`;
 const channelsFromRequest = (channel) => {
   if (channel === "both") return ["email", "sms"];
   return [channel];
+};
+
+const toTenDigitPhone = (phone) => {
+  const digits = `${phone || ""}`.replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
+  if (digits.length === 10) return digits;
+  return "";
 };
 
 const ensureOtpVerifiedForRegistration = async (email) => {
@@ -98,9 +111,29 @@ export const registerUser = async (payload) => {
     throw new ApiError(400, "Role is required");
   }
 
-  await ensureOtpVerifiedForRegistration(payload.email);
+  const normalizedEmail = payload.email.toLowerCase().trim();
+  const normalizedPhone = toTenDigitPhone(payload.phone);
 
-  const normalizedPayload = { ...payload };
+  const [existingEmailUser, existingPhoneUser] = await Promise.all([
+    findAnyUserByEmail(normalizedEmail),
+    normalizedPhone ? findAnyUserByPhone(normalizedPhone) : Promise.resolve(null),
+  ]);
+
+  if (existingEmailUser) {
+    throw new ApiError(409, "Email is already registered. Please login.");
+  }
+
+  if (existingPhoneUser) {
+    throw new ApiError(409, "Phone number is already registered. Please login.");
+  }
+
+  await ensureOtpVerifiedForRegistration(normalizedEmail);
+
+  const normalizedPayload = {
+    ...payload,
+    email: normalizedEmail,
+    phone: normalizedPhone || payload.phone,
+  };
 
   const locationPoint =
     toPoint(payload?.geoLocation) ||
@@ -125,12 +158,22 @@ export const registerUser = async (payload) => {
     }
   }
 
-  const user = await createUserByRole(normalizedPayload);
-  if (!user) {
-    throw new ApiError(400, "Invalid role");
+  let user;
+  try {
+    user = await createUserByRole(normalizedPayload);
+    if (!user) {
+      throw new ApiError(400, "Invalid role");
+    }
+  } catch (error) {
+    if (error?.code === 11000) {
+      const field = Object.keys(error?.keyPattern || {})[0] || "field";
+      const fieldLabel = field === "email" ? "Email" : field === "phone" ? "Phone number" : field;
+      throw new ApiError(409, `${fieldLabel} is already registered.`);
+    }
+    throw error;
   }
 
-  await Otp.deleteOne({ email: payload.email.toLowerCase(), purpose: "register" });
+  await Otp.deleteOne({ email: normalizedEmail, purpose: "register" });
 
   return {
     success: true,
@@ -144,11 +187,27 @@ export const registerUser = async (payload) => {
 };
 
 export const requestOtpCode = async ({ email, phone, purpose = "register", channel = "both" }) => {
-  const normalizedEmail = email.toLowerCase();
+  const normalizedEmail = email.toLowerCase().trim();
   const normalizedPhone = phone ? normalizePhoneNumber(phone) : undefined;
+  const phoneForDuplicateCheck = toTenDigitPhone(normalizedPhone || phone);
   const requiredChannels = channelsFromRequest(channel);
   const code = buildOtpCode();
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+
+  if (purpose === "register") {
+    const [existingEmailUser, existingPhoneUser] = await Promise.all([
+      findAnyUserByEmail(normalizedEmail),
+      phoneForDuplicateCheck ? findAnyUserByPhone(phoneForDuplicateCheck) : Promise.resolve(null),
+    ]);
+
+    if (existingEmailUser) {
+      throw new ApiError(409, "Email is already registered. Please login.");
+    }
+
+    if (existingPhoneUser) {
+      throw new ApiError(409, "Phone number is already registered. Please login.");
+    }
+  }
 
   if ((channel === "sms" || channel === "both") && !phone) {
     throw new ApiError(400, "Phone number is required for SMS OTP");
