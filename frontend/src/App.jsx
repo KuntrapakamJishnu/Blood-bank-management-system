@@ -30,6 +30,7 @@ const DonorDirectory = lazy(() => import("./pages/hospital/DonorDirectory"));
 const About = lazy(() => import("./components/about/About"));
 const Contact = lazy(() => import("./components/contact/Contact"));
 const DonorDonationHistory = lazy(() => import("./pages/donor/DonorDonationHistory"));
+const DonorMatches = lazy(() => import("./pages/donor/DonorMatches"));
 const StaticInfoPage = lazy(() => import("./components/StaticInfoPage"));
 const ForgotPassword = lazy(() => import("./pages/user/ForgotPassowrd"));
 
@@ -62,6 +63,7 @@ function App() {
           <Route index element={<DonorDashboard />} />
           <Route path="profile" element={<DonorProfile />} />
           <Route path="camps" element={<DonorCampsList />} />
+          <Route path="matches" element={<DonorMatches />} />
           <Route path="history" element={<DonorDonationHistory />} />
         </Route>
       

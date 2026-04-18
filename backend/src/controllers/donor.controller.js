@@ -604,3 +604,117 @@ const addToBloodStock = async (labId, bloodType, quantity) => {
     console.error("Error adding to blood stock:", error);
   }
 };
+
+/**
+ * @desc Get nearby hospitals and blood labs for donors using geolocation
+ * @route GET /api/donor/matches
+ * @access Private (Donor)
+ */
+export const getDonorMatches = async (req, res) => {
+  try {
+    const donorId = req.donor?.id || req.donor?._id;
+    const { latitude, longitude, maxDistanceKm = 50, page = 1, limit = 12 } = req.query;
+
+    const donor = donorId
+      ? await Donor.findById(donorId).select("address.location address.city address.state")
+      : null;
+
+    const donorLocation = donor?.address?.location;
+    const queryLatitude = Number.isFinite(Number(latitude)) ? Number(latitude) : donorLocation?.coordinates?.[1];
+    const queryLongitude = Number.isFinite(Number(longitude)) ? Number(longitude) : donorLocation?.coordinates?.[0];
+    const hasGeoSearch = Number.isFinite(Number(queryLatitude)) && Number.isFinite(Number(queryLongitude));
+    const maxDistanceMeters = Math.max(Number(maxDistanceKm) || 50, 1) * 1000;
+
+    const parsedPage = parseInt(page, 10);
+    const parsedLimit = parseInt(limit, 10);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    const filter = {
+      status: "approved",
+      facilityType: { $in: ["hospital", "blood-lab"] },
+    };
+
+    let matches = [];
+    let total = 0;
+
+    if (hasGeoSearch) {
+      const nearPoint = {
+        type: "Point",
+        coordinates: [queryLongitude, queryLatitude],
+      };
+
+      const geoNearStage = {
+        $geoNear: {
+          near: nearPoint,
+          key: "address.location",
+          distanceField: "distanceMeters",
+          spherical: true,
+          maxDistance: maxDistanceMeters,
+          query: filter,
+        },
+      };
+
+      const [facilityRows, totalRows] = await Promise.all([
+        Facility.aggregate([
+          geoNearStage,
+          { $sort: { distanceMeters: 1, name: 1 } },
+          { $skip: skip },
+          { $limit: parsedLimit },
+          {
+            $project: {
+              name: 1,
+              email: 1,
+              phone: 1,
+              emergencyContact: 1,
+              facilityType: 1,
+              facilityCategory: 1,
+              status: 1,
+              address: 1,
+              operatingHours: 1,
+              is24x7: 1,
+              emergencyServices: 1,
+              distanceKm: { $round: [{ $divide: ["$distanceMeters", 1000] }, 2] },
+            },
+          },
+        ]),
+        Facility.aggregate([geoNearStage, { $count: "total" }]),
+      ]);
+
+      matches = facilityRows;
+      total = totalRows[0]?.total || 0;
+    } else {
+      [matches, total] = await Promise.all([
+        Facility.find(filter)
+          .select("name email phone emergencyContact facilityType facilityCategory status address operatingHours is24x7 emergencyServices")
+          .sort({ name: 1 })
+          .skip(skip)
+          .limit(parsedLimit),
+        Facility.countDocuments(filter),
+      ]);
+    }
+
+    const pagination = {
+      total,
+      currentPage: parsedPage,
+      totalPages: Math.ceil(total / parsedLimit),
+      hasNext: parsedPage * parsedLimit < total,
+      hasPrev: parsedPage > 1,
+    };
+
+    res.json({
+      success: true,
+      message: "Nearby donation matches fetched successfully",
+      matches,
+      donorLocation: donorLocation || null,
+      pagination,
+      data: {
+        matches,
+        donorLocation: donorLocation || null,
+        pagination,
+      },
+    });
+  } catch (error) {
+    console.error("Get donor matches error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch nearby donation matches" });
+  }
+};

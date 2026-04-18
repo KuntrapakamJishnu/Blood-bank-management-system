@@ -328,8 +328,8 @@ const DonorDashboard = () => {
             <EmptyState
               icon={<Droplet className="w-8 h-8" />}
               message="No donation history yet"
-              actionText="Make your first donation"
-              onAction={() => navigate("/donor/camps")}
+              actionText="Find nearby matches"
+              onAction={() => navigate("/donor/matches")}
             />
           )}
         </Section>
@@ -379,9 +379,9 @@ const DonorDashboard = () => {
           />
           <ActionCard
             icon={<Calendar className="w-5 h-5" />}
-            title="Schedule Donation"
-            description="Book your next donation"
-            onClick={() => toast.success("Find nearby blood donation camps!")}
+            title="Find Nearby Matches"
+            description="See hospitals and labs near you"
+            onClick={() => navigate("/donor/matches")}
             color="red"
           />
           <ActionCard

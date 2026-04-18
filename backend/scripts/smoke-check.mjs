@@ -1,7 +1,7 @@
 const base = "http://localhost:5000";
 const now = Date.now();
-const donorEmail = `smoke.donor.${now}@example.com`;
-const facilityEmail = `smoke.hospital.${now}@example.com`;
+const donorEmail = `test.donor.${now}@example.com`;
+const facilityEmail = `test.hospital.${now}@example.com`;
 
 const donorPayload = {
   role: "donor",
@@ -25,12 +25,12 @@ const donorPayload = {
 const facilityPayload = {
   role: "hospital",
   facilityType: "hospital",
-  name: "Smoke Hospital",
+  name: "Amaravathi General Hospital",
   email: facilityEmail,
   password: "Password@123",
   phone: "9876543213",
   emergencyContact: "9876543214",
-  registrationNumber: `SMK${now}`,
+  registrationNumber: `AGH${now}`,
   address: {
     street: "456 Test Ave",
     city: "Hyderabad",
@@ -104,6 +104,9 @@ async function req(path, { method = "GET", body, token } = {}) {
       const rr = await req(path, { token: donorToken });
       push(`GET ${path}`, rr.status === 200 && rr.data?.success === true, `status=${rr.status}`);
     }
+
+    r = await req("/api/donor/matches", { token: donorToken });
+    push("GET /api/donor/matches donor", r.status === 200 && r.data?.success === true, `status=${r.status}`);
 
     r = await req("/api/auth/request-otp", {
       method: "POST",

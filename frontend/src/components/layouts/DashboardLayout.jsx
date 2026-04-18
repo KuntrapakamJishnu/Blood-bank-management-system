@@ -85,6 +85,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       icon: User,
       items: [
         { path: "/donor", label: "Dashboard", icon: BarChart3, badge: null },
+        { path: "/donor/matches", label: "Nearby Matches", icon: MapPin, badge: null },
         {
           path: "/donor/profile",
           label: "My Profile",

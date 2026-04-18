@@ -1,6 +1,6 @@
 const base = "http://localhost:5000";
 const now = Date.now();
-const labEmail = `smoke.lab.${now}@example.com`;
+const labEmail = `test.lab.${now}@example.com`;
 const checks = [];
 const push = (name, ok, detail = "") => checks.push({ name, ok, detail });
 
@@ -90,7 +90,7 @@ async function req(path, { method = "GET", body, token } = {}) {
       method: "POST",
       token: labToken,
       body: {
-        title: "Smoke Camp",
+        title: "Amaravathi Blood Donation Drive",
         description: "automation",
         date: new Date(Date.now() + 86400000).toISOString(),
         time: { start: "10:00", end: "14:00" },

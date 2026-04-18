@@ -403,10 +403,10 @@ const DonorDonationHistory = () => {
               </p>
               {history.length === 0 && (
                 <button
-                  onClick={() => navigate("/donor/camps")}
+                  onClick={() => navigate("/donor/matches")}
                   className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-semibold transition-colors"
                 >
-                  Schedule Your First Donation
+                  Find Nearby Matches
                 </button>
               )}
             </div>
