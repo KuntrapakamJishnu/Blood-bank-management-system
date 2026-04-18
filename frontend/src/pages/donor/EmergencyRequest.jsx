@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   AlertTriangle,
   Clock,
@@ -16,6 +16,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const EmergencyRequest = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { facilityId } = useParams();
   const token = localStorage.getItem("token");
 
@@ -34,18 +35,24 @@ const EmergencyRequest = () => {
   useEffect(() => {
     const fetchFacility = async () => {
       try {
-        // Get facility details from donor matches endpoint
+        if (location.state?.facility && location.state.facility._id === facilityId) {
+          setFacility(location.state.facility);
+          return;
+        }
+
         const res = await fetch(
-          `${API_BASE_URL}/api/facility/profile/${facilityId}`,
+          `${API_BASE_URL}/api/donor/matches?maxDistanceKm=500`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
-        if (!res.ok) throw new Error("Failed to fetch facility");
+        if (!res.ok) throw new Error("Failed to fetch donor matches");
 
         const data = await res.json();
-        setFacility(data.data || data);
+        const match = (data.matches || []).find((item) => item._id === facilityId);
+        if (!match) throw new Error("Facility not found in donor matches");
+        setFacility(match);
       } catch (err) {
         console.error("Fetch facility error:", err);
         toast.error("Failed to load facility details");
@@ -57,7 +64,7 @@ const EmergencyRequest = () => {
     if (facilityId) {
       fetchFacility();
     }
-  }, [facilityId]);
+  }, [facilityId, location.state, token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -93,7 +100,7 @@ const EmergencyRequest = () => {
         throw new Error(error.message || "Failed to create request");
       }
 
-      const data = await res.json();
+      await res.json();
 
       toast.success("Emergency request created successfully!");
       

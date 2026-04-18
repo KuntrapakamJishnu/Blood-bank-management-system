@@ -242,7 +242,11 @@ const DonorMatches = () => {
                 <div className="mt-6 flex flex-col sm:flex-row gap-3">
                   <button
                     type="button"
-                    onClick={() => navigate(`/donor/emergency/${match._id}`)}
+                    onClick={() =>
+                      navigate(`/donor/emergency/${match._id}`, {
+                        state: { facility: match },
+                      })
+                    }
                     className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors"
                   >
                     <Zap className="w-4 h-4" />
