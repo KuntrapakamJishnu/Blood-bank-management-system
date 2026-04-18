@@ -71,7 +71,12 @@ export const getDonorProfile = async (req, res) => {
       updatedAt: donor.updatedAt,
     };
 
-    res.status(200).json({ donor: donorProfile });
+    res.status(200).json({
+      success: true,
+      message: "Donor profile fetched successfully",
+      donor: donorProfile,
+      data: { donor: donorProfile },
+    });
   } catch (error) {
     console.error("❌ Error fetching donor profile:", error);
     res
@@ -115,18 +120,21 @@ export const updateDonorProfile = async (req, res) => {
 
     const updatedDonor = await donor.save();
 
+    const donorResponse = {
+      fullName: updatedDonor.fullName,
+      email: updatedDonor.email,
+      phone: updatedDonor.phone,
+      address: updatedDonor.address,
+      age: updatedDonor.age,
+      gender: updatedDonor.gender,
+      weight: updatedDonor.weight,
+    };
+
     res.status(200).json({
+      success: true,
       message: "Profile updated successfully",
-      // Only send back non-sensitive/non-history fields
-      donor: {
-        fullName: updatedDonor.fullName,
-        email: updatedDonor.email,
-        phone: updatedDonor.phone,
-        address: updatedDonor.address,
-        age: updatedDonor.age,
-        gender: updatedDonor.gender,
-        weight: updatedDonor.weight,
-      },
+      donor: donorResponse,
+      data: { donor: donorResponse },
     });
   } catch (error) {
     console.error("❌ Error updating donor profile:", error);
@@ -249,14 +257,18 @@ export const getDonorStats = async (req, res) => {
     }
 
 
+    const dashboard = {
+      totalDonations,
+      lastDonationDate,
+      nextEligibleDonationDate,
+      eligibilityStatus: eligibilityStatus,
+    };
+
     res.json({
       success: true,
-      dashboard: {
-        totalDonations,
-        lastDonationDate,
-        nextEligibleDonationDate,
-        eligibilityStatus: eligibilityStatus,
-      },
+      message: "Donor statistics fetched successfully",
+      dashboard,
+      data: { dashboard },
     });
 
   } catch (error) {
@@ -345,13 +357,20 @@ export const getDonorHistory = async (req, res) => {
       state: item.facility?.address?.state,
     }));
     
+    const pagination = {
+      total,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(total / parseInt(limit)),
+    };
+
     res.json({
       success: true,
+      message: "Donation history fetched successfully",
       history,
-      pagination: {
-        total,
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
+      pagination,
+      data: {
+        history,
+        pagination,
       },
     });
 
@@ -387,7 +406,12 @@ export const searchDonor = async (req, res) => {
     .limit(20)
     .sort({ lastDonationDate: -1 });
 
-    res.status(200).json({ success: true, donors });
+    res.status(200).json({
+      success: true,
+      message: "Donors fetched successfully",
+      donors,
+      data: { donors },
+    });
   } catch (err) {
     console.error("Search donor error:", err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -460,10 +484,11 @@ export const markDonation = async (req, res) => {
     const bloodType = bloodGroup || donor.bloodGroup;
     await addToBloodStock(labId, bloodType, quantity);
 
-    res.status(200).json({ 
-      success: true, 
-      message: "Donation recorded successfully", 
-      donor 
+    res.status(200).json({
+      success: true,
+      message: "Donation recorded successfully",
+      donor,
+      data: { donor },
     });
   } catch (err) {
     console.error("Mark donation error:", err);
@@ -533,14 +558,21 @@ export const getRecentDonations = async (req, res) => {
         }))
     ).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
 
+    const stats = {
+      today: todayDonations,
+      thisWeek: weekDonations,
+      total: allDonations[0]?.total || 0,
+    };
+
     res.json({
       success: true,
-      stats: {
-        today: todayDonations,
-        thisWeek: weekDonations,
-        total: allDonations[0]?.total || 0
+      message: "Recent donations fetched successfully",
+      stats,
+      donations: recentDonations,
+      data: {
+        stats,
+        donations: recentDonations,
       },
-      donations: recentDonations
     });
   } catch (err) {
     console.error("Get recent donations error:", err);

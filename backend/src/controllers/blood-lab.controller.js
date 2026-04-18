@@ -33,16 +33,25 @@ export const getBloodLabDashboard = async (req, res) => {
 
     const recentCamps = camps.slice(0, 5);
 
+    const stats = {
+      totalCamps,
+      upcomingCamps,
+      completedCamps,
+      totalDonors,
+      totalUnits,
+    };
+
     res.json({
-      stats: {
-        totalCamps,
-        upcomingCamps,
-        completedCamps,
-        totalDonors,
-        totalUnits
-      },
+      success: true,
+      message: "Blood lab dashboard fetched successfully",
+      stats,
       recentCamps,
-      facility: facility // Now includes history as fallback
+      facility, // Now includes history as fallback
+      data: {
+        stats,
+        recentCamps,
+        facility,
+      },
     });
   } catch (error) {
     console.error("Dashboard Error:", error);
@@ -73,7 +82,16 @@ export const getBloodLabHistory = async (req, res) => {
         ip: login.description || "Unknown",
       }));
 
-    res.json({ activity, logins });
+    res.json({
+      success: true,
+      message: "Blood lab history fetched successfully",
+      activity,
+      logins,
+      data: {
+        activity,
+        logins,
+      },
+    });
   } catch (error) {
     console.error("History Error:", error);
     res.status(500).json({ message: "Failed to fetch blood lab history" });
@@ -483,7 +501,9 @@ export const getBloodStock = async (req, res) => {
 
     res.json({
       success: true,
-      data: stock
+      message: "Blood stock fetched successfully",
+      data: stock,
+      stock,
     });
   } catch (error) {
     console.error("Get Blood Stock Error:", error);
@@ -514,7 +534,9 @@ export const getLabBloodRequests = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      requests
+      message: "Blood requests fetched successfully",
+      requests,
+      data: requests,
     });
   } catch (err) {
     console.error("Get Lab Requests Error:", err);

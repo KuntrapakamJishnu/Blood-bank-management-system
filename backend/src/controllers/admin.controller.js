@@ -18,7 +18,7 @@ export const getDashboardStats = async (req, res) => {
 
     const activeDonors = await Donor.countDocuments({ isEligible: true });
 
-    res.status(200).json({
+    const stats = {
       totalDonors,
       totalFacilities,
       approvedFacilities,
@@ -26,10 +26,17 @@ export const getDashboardStats = async (req, res) => {
       totalDonations,
       activeDonors,
       upcomingCamps: 3, // Placeholder
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Admin dashboard statistics fetched successfully",
+      ...stats,
+      data: { stats },
     });
   } catch (err) {
     console.error("Admin Stats Error:", err);
-    res.status(500).json({ message: "Failed to fetch stats" });
+    res.status(500).json({ success: false, message: "Failed to fetch stats" });
   }
 };
 
@@ -38,9 +45,14 @@ export const getAllDonors = async (req, res) => {
   try {
     // Note: This function was present in your code block but not used in the router
     const donors = await Donor.find().select("-password");
-    res.status(200).json({ donors });
+    res.status(200).json({
+      success: true,
+      message: "Donors fetched successfully",
+      donors,
+      data: { donors },
+    });
   } catch (err) {
-    res.status(500).json({ message: "Error fetching donors" });
+    res.status(500).json({ success: false, message: "Error fetching donors" });
   }
 };
 
@@ -48,9 +60,14 @@ export const getAllDonors = async (req, res) => {
 export const getAllFacilities = async (req, res) => {
   try {
     const facilities = await Facility.find();
-    res.status(200).json({ facilities });
+    res.status(200).json({
+      success: true,
+      message: "Facilities fetched successfully",
+      facilities,
+      data: { facilities },
+    });
   } catch (err) {
-    res.status(500).json({ message: "Error fetching facilities" });
+    res.status(500).json({ success: false, message: "Error fetching facilities" });
   }
 };
 
@@ -58,7 +75,7 @@ export const getAllFacilities = async (req, res) => {
 export const approveFacility = async (req, res) => {
   try {
     const facility = await Facility.findById(req.params.id);
-    if (!facility) return res.status(404).json({ message: "Facility not found" });
+    if (!facility) return res.status(404).json({ success: false, message: "Facility not found" });
 
     facility.status = "approved";
     facility.approvedBy = req.user?._id;
@@ -73,10 +90,15 @@ export const approveFacility = async (req, res) => {
 
     await facility.save();
 
-    res.status(200).json({ message: "Facility approved", facility });
+    res.status(200).json({
+      success: true,
+      message: "Facility approved",
+      facility,
+      data: { facility },
+    });
   } catch (err) {
     console.error("Facility Approval Error:", err);
-    res.status(500).json({ message: "Error approving facility" });
+    res.status(500).json({ success: false, message: "Error approving facility" });
   }
 };
 
@@ -84,10 +106,10 @@ export const approveFacility = async (req, res) => {
 export const rejectFacility = async (req, res) => {
   try {
     const facility = await Facility.findById(req.params.id);
-    if (!facility) return res.status(404).json({ message: "Facility not found" });
+    if (!facility) return res.status(404).json({ success: false, message: "Facility not found" });
 
     const { rejectionReason } = req.body;
-    if (!rejectionReason) return res.status(400).json({ message: "Rejection reason is required." });
+    if (!rejectionReason) return res.status(400).json({ success: false, message: "Rejection reason is required." });
 
     facility.status = "rejected";
     facility.rejectionReason = rejectionReason;
@@ -102,9 +124,14 @@ export const rejectFacility = async (req, res) => {
 
     await facility.save();
 
-    res.status(200).json({ message: "Facility rejected and status updated", facility });
+    res.status(200).json({
+      success: true,
+      message: "Facility rejected and status updated",
+      facility,
+      data: { facility },
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error rejecting facility" });
+    res.status(500).json({ success: false, message: "Error rejecting facility" });
   }
 };

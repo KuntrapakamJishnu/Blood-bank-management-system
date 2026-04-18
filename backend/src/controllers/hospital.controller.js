@@ -94,9 +94,11 @@ export const getHospitalRequests = async (req, res) => {
       .populate("labId", "name email phone address")
       .sort({ createdAt: -1 });
 
-    res.json({ 
-      success: true, 
-      data: requests 
+    res.json({
+      success: true,
+      message: "Hospital blood requests fetched successfully",
+      data: requests,
+      requests,
     });
   } catch (err) {
     console.error("Get Hospital Requests Error:", err);
@@ -124,16 +126,25 @@ export const getHospitalDashboard = async (req, res) => {
     const totalUnits = inventory.reduce((sum, item) => sum + item.quantity, 0);
     const pendingRequests = requests.filter(r => r.status === "pending").length;
 
+    const stats = {
+      totalUnits,
+      pendingRequests,
+      totalRequests: requests.length,
+    };
+
     res.json({
       success: true,
-      stats: {
-        totalUnits,
-        pendingRequests,
-        totalRequests: requests.length
-      },
+      message: "Hospital dashboard fetched successfully",
+      stats,
       inventory,
       recentRequests: requests.slice(0, 5),
-      hospital
+      hospital,
+      data: {
+        stats,
+        inventory,
+        recentRequests: requests.slice(0, 5),
+        hospital,
+      },
     });
 
   } catch (error) {
@@ -151,9 +162,11 @@ export const getHospitalStock = async (req, res) => {
 
     const stock = await Blood.find({ hospital: hospitalId }).sort({ bloodGroup: 1 });
 
-    res.json({ 
-      success: true, 
-      data: stock 
+    res.json({
+      success: true,
+      message: "Hospital blood stock fetched successfully",
+      data: stock,
+      stock,
     });
   } catch (error) {
     console.error("Get Hospital Stock Error:", error);
@@ -175,9 +188,13 @@ export const getHospitalHistory = async (req, res) => {
       message: "Hospital not found" 
     });
 
+    const history = hospital.history.sort((a, b) => new Date(b.date) - new Date(a.date));
+
     res.json({
       success: true,
-      history: hospital.history.sort((a, b) => new Date(b.date) - new Date(a.date))
+      message: "Hospital history fetched successfully",
+      history,
+      data: { history },
     });
 
   } catch (error) {
@@ -364,21 +381,31 @@ export const getAllDonors = async (req, res) => {
       })
     ]);
 
+    const pagination = {
+      total,
+      currentPage: parsedPage,
+      totalPages: Math.ceil(total / parsedLimit),
+      hasNext: parsedPage * parsedLimit < total,
+      hasPrev: parsedPage > 1,
+    };
+
+    const stats = {
+      total,
+      available: availableDonors,
+      rareBlood: rareBloodDonors,
+    };
+
     res.json({
       success: true,
+      message: "Donors fetched successfully",
       donors,
-      pagination: {
-        total,
-        currentPage: parsedPage,
-        totalPages: Math.ceil(total / parsedLimit),
-        hasNext: parsedPage * parsedLimit < total,
-        hasPrev: parsedPage > 1
+      pagination,
+      stats,
+      data: {
+        donors,
+        pagination,
+        stats,
       },
-      stats: {
-        total,
-        available: availableDonors,
-        rareBlood: rareBloodDonors
-      }
     });
   } catch (err) {
     console.error("Get all donors error:", err);
@@ -423,7 +450,11 @@ export const logContactAttempt = async (req, res) => {
 
     await donor.save();
 
-    res.json({ success: true, message: "Contact logged successfully" });
+    res.json({
+      success: true,
+      message: "Contact logged successfully",
+      data: null,
+    });
   } catch (err) {
     console.error("Log contact error:", err);
     res.status(500).json({ success: false, message: "Failed to log contact" });
