@@ -28,10 +28,10 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { icon: Globe, name: "Website", url: "#" },
-    { icon: MessageSquare, name: "Community", url: "#" },
-    { icon: Send, name: "Updates", url: "#" },
-    { icon: Shield, name: "Trust", url: "#" },
+    { icon: Globe, name: "Website", url: "/" },
+    { icon: MessageSquare, name: "Community", url: "/about" },
+    { icon: Send, name: "Updates", url: "/news" },
+    { icon: Shield, name: "Trust", url: "/privacy" },
   ];
 
   return (
