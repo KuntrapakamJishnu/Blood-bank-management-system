@@ -96,9 +96,9 @@ function App() {
           <Route path="verification" element={<AdminFacilities />} />
           <Route path="donors" element={<GetAllDonors />} />
           <Route path="facilities" element={<GetAllFacilities />} />
-          <Route path="donations" element={<ABloodCamps />} />
-          <Route path="emergency-requests" element={<AdminEmergencyRequestDonations />} />
-          <Route path="camps" element={<AdminCamps />} />
+          <Route path="donations" element={<AdminDonations />} />
+          <Route path="emergency-requests" element={<AdminEmergencyRequests />} />
+          <Route path="camps" element={<AdminBloodCamps />} />
         </Route>
       </Routes>
     </Suspense>
