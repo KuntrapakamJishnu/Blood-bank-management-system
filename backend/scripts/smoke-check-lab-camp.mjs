@@ -1,8 +1,55 @@
+import "dotenv/config";
+import { randomInt } from "node:crypto";
+import mongoose from "mongoose";
+import SmokeUser from "../src/models/smoke-user.model.js";
+import { findAnyUserByEmail, findAnyUserByPhone } from "../src/repositories/auth.repository.js";
+
 const base = "http://localhost:5000";
 const now = Date.now();
-const labEmail = `test.lab.${now}@example.com`;
 const checks = [];
 const push = (name, ok, detail = "") => checks.push({ name, ok, detail });
+
+let dbConnected = false;
+
+const buildUniqueEmail = async (prefix, domain) => {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const candidate = `${prefix}.${now}.${randomInt(100000, 999999)}@${domain}`;
+    if (!(await findAnyUserByEmail(candidate))) {
+      return candidate;
+    }
+  }
+
+  throw new Error(`Unable to generate unique email for ${prefix}`);
+};
+
+const buildUniquePhone = async () => {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const candidate = `9${randomInt(100000000, 999999999)}`;
+    if (!(await findAnyUserByPhone(candidate))) {
+      return candidate;
+    }
+  }
+
+  throw new Error("Unable to generate unique phone number");
+};
+
+const getSmokeUser = async (key) => {
+  if (!process.env.MONGO_URI) {
+    throw new Error("MONGO_URI is required to load smoke user fixtures");
+  }
+
+  if (!dbConnected) {
+    await mongoose.connect(process.env.MONGO_URI);
+    dbConnected = true;
+  }
+
+  const fixture = await SmokeUser.findOne({ key }).lean();
+  if (!fixture?.payload) {
+    throw new Error(`Missing smoke user fixture: ${key}`);
+  }
+
+  return fixture.payload;
+};
 
 async function req(path, { method = "GET", body, token } = {}) {
   const headers = { "Content-Type": "application/json" };
@@ -23,6 +70,9 @@ async function req(path, { method = "GET", body, token } = {}) {
 
 (async () => {
   try {
+    const labFixture = await getSmokeUser("lab-register");
+    const labEmail = await buildUniqueEmail(labFixture.emailPrefix, labFixture.emailDomain);
+
     const adminLogin = await req("/api/auth/login", {
       method: "POST",
       body: { email: "admin@bbms.local", password: "bbms@admin" },
@@ -45,21 +95,21 @@ async function req(path, { method = "GET", body, token } = {}) {
     const reg = await req("/api/auth/register", {
       method: "POST",
       body: {
-        role: "blood-lab",
-        facilityType: "blood-lab",
-        name: "Smoke Lab",
+        role: labFixture.role,
+        facilityType: labFixture.facilityType,
+        name: labFixture.name,
         email: labEmail,
-        password: "Password@123",
-        phone: "9876543221",
-        emergencyContact: "9876543222",
-        registrationNumber: `LAB${now}`,
-        address: { street: "1 Lab Street", city: "Hyderabad", state: "Telangana", pincode: "500003" },
-        documents: { registrationProof: { url: "https://example.com/lab-proof.pdf", filename: "lab-proof.pdf" } },
+        password: labFixture.password,
+        phone: await buildUniquePhone(),
+        emergencyContact: await buildUniquePhone(),
+        registrationNumber: `${labFixture.registrationPrefix}${now}`,
+        address: labFixture.address,
+        documents: labFixture.documents,
       },
     });
     push("POST /api/auth/register blood-lab", reg.status === 201, `status=${reg.status}`);
 
-    const facList = await req("/api/admin/facilities", { token: adminToken });
+    const facList = await req("/api/admin/facilities?includeTestData=true", { token: adminToken });
     const created = facList.data?.facilities?.find((f) => f.email === labEmail);
     push("GET /api/admin/facilities", facList.status === 200 && !!created?._id, `status=${facList.status}`);
 
@@ -104,6 +154,10 @@ async function req(path, { method = "GET", body, token } = {}) {
     push("GET /api/camps", campRoutes.status === 200, `status=${campRoutes.status}`);
   } catch (error) {
     push("Smoke script runtime", false, error.message);
+  } finally {
+    if (dbConnected) {
+      await mongoose.disconnect();
+    }
   }
 
   const failed = checks.filter((check) => !check.ok);

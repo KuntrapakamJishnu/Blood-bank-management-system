@@ -1,18 +1,36 @@
 import "dotenv/config";
+import { randomInt } from "node:crypto";
 import mongoose from "mongoose";
 import Otp from "../src/models/otp.model.js";
+import SmokeUser from "../src/models/smoke-user.model.js";
+import { findAnyUserByEmail, findAnyUserByPhone } from "../src/repositories/auth.repository.js";
 
 const base = "http://localhost:5000";
 const now = Date.now();
-const donorEmail = `test.donor.${now}@example.com`;
-const facilityEmail = `test.hospital.${now}@example.com`;
-
-const uniquePhone = (offset = 0) => {
-  const suffix = String((now + offset) % 1000000000).padStart(9, "0");
-  return `9${suffix}`;
-};
 
 let dbConnected = false;
+
+const buildUniqueEmail = async (prefix, domain) => {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const candidate = `${prefix}.${now}.${randomInt(100000, 999999)}@${domain}`;
+    if (!(await findAnyUserByEmail(candidate))) {
+      return candidate;
+    }
+  }
+
+  throw new Error(`Unable to generate unique email for ${prefix}`);
+};
+
+const buildUniquePhone = async () => {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const candidate = `9${randomInt(100000000, 999999999)}`;
+    if (!(await findAnyUserByPhone(candidate))) {
+      return candidate;
+    }
+  }
+
+  throw new Error("Unable to generate unique phone number");
+};
 
 const getOtpFromDb = async (email) => {
   if (!process.env.MONGO_URI) return null;
@@ -29,46 +47,22 @@ const getOtpFromDb = async (email) => {
   return otpDoc?.code || null;
 };
 
-const donorPayload = {
-  role: "donor",
-  fullName: "Vishnu Kumar",
-  email: donorEmail,
-  password: "Password@123",
-  phone: uniquePhone(101),
-  emergencyContact: uniquePhone(102),
-  age: 25,
-  gender: "Male",
-  bloodGroup: "O+",
-  weight: 65,
-  address: {
-    street: "123 Test St",
-    city: "Hyderabad",
-    state: "Telangana",
-    pincode: "500001",
-  },
-};
+const getSmokeUser = async (key) => {
+  if (!process.env.MONGO_URI) {
+    throw new Error("MONGO_URI is required to load smoke user fixtures");
+  }
 
-const facilityPayload = {
-  role: "hospital",
-  facilityType: "hospital",
-  name: `Amaravathi General Hospital ${now}`,
-  email: facilityEmail,
-  password: "Password@123",
-  phone: uniquePhone(201),
-  emergencyContact: uniquePhone(202),
-  registrationNumber: `SGH${now}`,
-  address: {
-    street: "456 Test Ave",
-    city: "Hyderabad",
-    state: "Telangana",
-    pincode: "500002",
-  },
-  documents: {
-    registrationProof: {
-      url: "https://example.com/proof.pdf",
-      filename: "proof.pdf",
-    },
-  },
+  if (!dbConnected) {
+    await mongoose.connect(process.env.MONGO_URI);
+    dbConnected = true;
+  }
+
+  const fixture = await SmokeUser.findOne({ key }).lean();
+  if (!fixture?.payload) {
+    throw new Error(`Missing smoke user fixture: ${key}`);
+  }
+
+  return fixture.payload;
 };
 
 const checks = [];
@@ -103,6 +97,39 @@ async function req(path, { method = "GET", body, token } = {}) {
 
 (async () => {
   try {
+    const donorFixture = await getSmokeUser("donor-register");
+    const facilityFixture = await getSmokeUser("facility-register");
+    const smsFixture = await getSmokeUser("sms-register");
+
+    const donorEmail = await buildUniqueEmail(donorFixture.emailPrefix, donorFixture.emailDomain);
+    const donorPayload = {
+      role: donorFixture.role,
+      fullName: donorFixture.fullName,
+      email: donorEmail,
+      password: donorFixture.password,
+      phone: await buildUniquePhone(),
+      emergencyContact: await buildUniquePhone(),
+      age: donorFixture.age,
+      gender: donorFixture.gender,
+      bloodGroup: donorFixture.bloodGroup,
+      weight: donorFixture.weight,
+      address: donorFixture.address,
+    };
+
+    const facilityEmail = await buildUniqueEmail(facilityFixture.emailPrefix, facilityFixture.emailDomain);
+    const facilityPayload = {
+      role: facilityFixture.role,
+      facilityType: facilityFixture.facilityType,
+      name: `${facilityFixture.namePrefix} ${now}`,
+      email: facilityEmail,
+      password: facilityFixture.password,
+      phone: await buildUniquePhone(),
+      emergencyContact: await buildUniquePhone(),
+      registrationNumber: `${facilityFixture.registrationPrefix}${now}`,
+      address: facilityFixture.address,
+      documents: facilityFixture.documents,
+    };
+
     let r = await req("/api/v1/health");
     push("GET /api/v1/health", r.status === 200, `status=${r.status}`);
 
@@ -202,11 +229,12 @@ async function req(path, { method = "GET", body, token } = {}) {
       push("Facility dashboard/hospital route checks", false, "Skipped because admin login/approval failed");
     }
 
+    const smsEmail = await buildUniqueEmail(smsFixture.emailPrefix, smsFixture.emailDomain);
     const smsReq = await req("/api/auth/request-otp", {
       method: "POST",
       body: {
-        email: `sms.${now}@example.com`,
-        phone: uniquePhone(301),
+        email: smsEmail,
+        phone: await buildUniquePhone(),
         channel: "both",
         purpose: "register",
       },
