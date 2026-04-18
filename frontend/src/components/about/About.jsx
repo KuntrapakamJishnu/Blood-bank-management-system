@@ -253,8 +253,8 @@ const AboutUs = () => {
             <div className="text-center">
               <Mail className="w-8 h-8 text-red-600 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Email Us</h3>
-              <p className="text-gray-600">hello@onedrop.app</p>
-              <p className="text-gray-600">support@onedrop.app</p>
+              <p className="text-gray-600">bloodbankadmin@gmail.com</p>
+              <p className="text-gray-600">bloodbankadmin@gmail.com</p>
             </div>
             <div className="text-center">
               <Globe className="w-8 h-8 text-red-600 mx-auto mb-4" />

@@ -142,7 +142,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <Mail className="w-4 h-4 text-red-400" />
-                <span>support@onedrop.app</span>
+                <span>bloodbankadmin@gmail.com</span>
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <MapPin className="w-4 h-4 text-red-400" />

@@ -33,7 +33,7 @@ const Contact = () => {
           <div className="text-center shadow-md p-8 rounded-xl hover:shadow-xl transition">
             <Phone className="w-10 h-10 text-red-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Emergency Helpline</h3>
-            <p className="text-gray-600">+91 98765 43210</p>
+            <p className="text-gray-600">+91 6305205896</p>
             <p className="text-gray-600">Available 24/7</p>
           </div>
 
@@ -41,8 +41,8 @@ const Contact = () => {
           <div className="text-center shadow-md p-8 rounded-xl hover:shadow-xl transition">
             <Mail className="w-10 h-10 text-red-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Email Us</h3>
-            <p className="text-gray-600">support@onedrop.app</p>
-            <p className="text-gray-600">hello@onedrop.app</p>
+            <p className="text-gray-600">bloodbankadmin@gmail.com</p>
+            <p className="text-gray-600">bloodbankadmin@gmail.com</p>
           </div>
 
           {/* Office */}
@@ -76,11 +76,11 @@ const Contact = () => {
             <div className="space-y-4">
               <div className="flex items-center">
                 <Phone className="text-red-600 mr-3" />
-                <span className="text-gray-700">+91 1234567890</span>
+                <span className="text-gray-700">+91 6305205896</span>
               </div>
               <div className="flex items-center">
                 <Mail className="text-red-600 mr-3" />
-                <span className="text-gray-700">support@onedrop.app</span>
+                <span className="text-gray-700">bloodbankadmin@gmail.com</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="text-red-600 mr-3" />
