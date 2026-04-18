@@ -29,11 +29,22 @@ const getResendClient = () => {
 };
 
 const getOtpFromEmail = () => {
-  return (
+  const configuredFrom =
     process.env.RESEND_FROM_EMAIL ||
     process.env.OTP_FROM_EMAIL ||
-    ""
-  );
+    "";
+
+  const lowerFrom = configuredFrom.toLowerCase();
+  const unsupportedConsumerDomain =
+    /@(gmail\.com|yahoo\.com|outlook\.com|hotmail\.com)$/i.test(lowerFrom);
+
+  // Resend rejects common consumer mailbox domains as sender identities.
+  // In non-production, fallback to Resend's test sender so OTP still works.
+  if (unsupportedConsumerDomain && process.env.NODE_ENV !== "production") {
+    return "onboarding@resend.dev";
+  }
+
+  return configuredFrom;
 };
 
 const formatPhoneNumber = (phone) => {
@@ -56,7 +67,7 @@ export const sendOtpEmail = async ({ email, code, purpose = "register" }) => {
     return {
       channel: "email",
       delivered: false,
-      reason: "Resend is not configured (set RESEND_API_KEY and RESEND_FROM_EMAIL)",
+      reason: "Resend is not configured (set RESEND_API_KEY and a valid RESEND_FROM_EMAIL)",
     };
   }
 

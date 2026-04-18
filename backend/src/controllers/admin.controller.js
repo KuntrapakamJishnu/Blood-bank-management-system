@@ -63,7 +63,14 @@ export const getAllDonors = async (req, res) => {
 // 🏥 Get All Facilities (Pending + Approved)
 export const getAllFacilities = async (req, res) => {
   try {
-    const facilities = await Facility.find();
+    const includeTestData = req.query.includeTestData === "true";
+    const filter = includeTestData
+      ? {}
+      : {
+          email: { $not: /^(smoke\.|test\.(hospital|lab)\.)/i },
+        };
+
+    const facilities = await Facility.find(filter).sort({ createdAt: -1 });
     res.status(200).json({
       success: true,
       message: "Facilities fetched successfully",

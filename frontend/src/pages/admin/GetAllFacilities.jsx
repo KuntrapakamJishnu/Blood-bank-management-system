@@ -442,10 +442,10 @@ function GetAllFacilities() {
                 {/* Header with Name and Badges */}
                 <div className="flex items-start justify-between mb-4 pb-4 border-b border-gray-100">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-gray-800 line-clamp-1 group-hover:text-red-600 transition-colors">
+                    <h3 className="text-lg font-bold text-gray-800 break-words group-hover:text-red-600 transition-colors">
                       {facility.name}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1 line-clamp-1">
+                    <p className="text-sm text-gray-500 mt-1 break-all">
                       {facility.email}
                     </p>
                   </div>

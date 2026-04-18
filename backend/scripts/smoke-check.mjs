@@ -25,12 +25,12 @@ const donorPayload = {
 const facilityPayload = {
   role: "hospital",
   facilityType: "hospital",
-  name: "Amaravathi General Hospital",
+  name: `Smoke General Hospital ${now}`,
   email: facilityEmail,
   password: "Password@123",
   phone: "9876543213",
   emergencyContact: "9876543214",
-  registrationNumber: `AGH${now}`,
+  registrationNumber: `SGH${now}`,
   address: {
     street: "456 Test Ave",
     city: "Hyderabad",
