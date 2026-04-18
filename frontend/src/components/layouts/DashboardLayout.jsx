@@ -19,6 +19,7 @@ import {
   ClipboardPlus,
   Ambulance,
   TestTube,
+  MapPin,
   ChevronLeft,
   ChevronRight,
   Search,

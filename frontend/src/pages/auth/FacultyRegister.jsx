@@ -289,7 +289,7 @@ export default function FacilityRegisterForm() {
     }
 
     if (!otpStatus.ready) {
-      toast.error("Please verify email and SMS OTP before registration");
+      toast.error("Please verify email OTP before registration");
       return;
     }
 

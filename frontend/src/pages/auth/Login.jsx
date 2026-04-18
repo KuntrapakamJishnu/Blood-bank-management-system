@@ -30,10 +30,14 @@ export default function Login() {
 
     try {
       const apiUrl = `${import.meta.env.VITE_API_URL || ""}/api/auth/login`;
+      const normalizedEmail = formData.email.trim().toLowerCase();
       const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          email: normalizedEmail,
+          password: formData.password,
+        }),
       });
 
       // Handle non-JSON responses (like 404 HTML pages)
@@ -49,6 +53,14 @@ export default function Login() {
       console.log("Login response:", data);
 
       if (!res.ok) {
+        if (
+          data.message?.toLowerCase().includes("user not found") &&
+          normalizedEmail.includes("@vitapstudent") &&
+          !normalizedEmail.includes(".ac.in")
+        ) {
+          throw new Error("User not found. Did you mean: jishnu.22mic7160@vitapstudent.ac.in ?");
+        }
+
         // 🔒 Handle facility waiting approval or rejected cases
         if (data.message?.includes("awaiting admin approval")) {
           setError(

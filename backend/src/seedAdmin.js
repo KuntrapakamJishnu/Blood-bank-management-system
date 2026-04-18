@@ -4,34 +4,52 @@ import Admin from "./models/admin.model.js";
 
 dotenv.config({ quiet: true });
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected ✅"))
-  .catch(err => console.error(err));
-
-const seedAdmin = async () => {
+export const ensureSeedAdmin = async () => {
   try {
     const adminEmail = process.env.SEED_ADMIN_EMAIL || "admin@bbms.local";
     const adminPassword = process.env.SEED_ADMIN_PASSWORD || "bbms@admin";
     const adminName = process.env.SEED_ADMIN_NAME || "System Admin";
 
-    // Remove existing admin with same email
-    await Admin.deleteMany({ email: adminEmail });
+    const normalizedEmail = adminEmail.toLowerCase().trim();
+    let admin = await Admin.findOne({ email: normalizedEmail }).select("+password");
 
-    // Create new admin
-    const admin = new Admin({
-      name: adminName,
-      email: adminEmail,
-      password: adminPassword, // will be hashed automatically
-      role: "admin",
-    });
+    if (!admin) {
+      admin = new Admin({
+        name: adminName,
+        email: normalizedEmail,
+        password: adminPassword,
+        role: "admin",
+        isActive: true,
+      });
+      await admin.save();
+      console.log("Seed admin created ✅");
+      return;
+    }
 
+    admin.name = adminName;
+    admin.password = adminPassword;
+    admin.role = "admin";
+    admin.isActive = true;
     await admin.save();
-    console.log("Admin seeded successfully ✅");
-    process.exit();
+    console.log("Seed admin updated ✅");
+  } catch (error) {
+    console.error("Seed admin failed:", error.message);
+    throw error;
+  }
+};
+
+const runSeedScript = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB connected ✅");
+    await ensureSeedAdmin();
+    process.exit(0);
   } catch (error) {
     console.error(error);
     process.exit(1);
   }
 };
 
-seedAdmin();
+if (process.argv[1] && process.argv[1].includes("seedAdmin.js")) {
+  runSeedScript();
+}

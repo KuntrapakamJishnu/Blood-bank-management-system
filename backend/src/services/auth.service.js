@@ -5,6 +5,7 @@ import Otp from "../models/otp.model.js";
 import { deliverOtp, getOtpProviderStatus, normalizePhoneNumber, verifySmsOtp } from "./otp-delivery.service.js";
 
 const OTP_EXPIRY_MINUTES = 10;
+const DEV_OTP_ENABLED = process.env.ENABLE_DEV_OTP === "true";
 
 const toPoint = (payload) => {
   const latitude = Number(payload?.latitude);
@@ -178,8 +179,26 @@ export const requestOtpCode = async ({ email, phone, purpose = "register", chann
     channel,
   });
 
+  const deliveryResults = Array.isArray(delivery?.results) ? delivery.results : [];
+  const emailRequired = requiredChannels.includes("email");
+  const smsRequired = requiredChannels.includes("sms");
+  const emailDelivered = emailRequired
+    ? Boolean(deliveryResults.find((result) => result.channel === "email")?.delivered)
+    : true;
+  const smsDelivered = smsRequired
+    ? Boolean(deliveryResults.find((result) => result.channel === "sms")?.delivered)
+    : true;
+
   if (!delivery.delivered && process.env.NODE_ENV === "production") {
     throw new ApiError(503, "Unable to deliver OTP via configured providers");
+  }
+
+  if (!emailDelivered) {
+    throw new ApiError(503, "Unable to deliver Email OTP. Please try again or contact support.");
+  }
+
+  if (smsRequired && !smsDelivered && process.env.NODE_ENV === "production") {
+    throw new ApiError(503, "Unable to deliver SMS OTP. Please try again.");
   }
 
   // In development, return OTP for easy testing when delivery setup is incomplete.
@@ -191,7 +210,7 @@ export const requestOtpCode = async ({ email, phone, purpose = "register", chann
     providerStatus: getOtpProviderStatus(),
   };
 
-  if (process.env.NODE_ENV !== "production") {
+  if (DEV_OTP_ENABLED) {
     if (requiredChannels.includes("email") || !process.env.TWILIO_VERIFY_SERVICE_SID) {
       response.devOtp = code;
     }

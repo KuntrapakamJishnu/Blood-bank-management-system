@@ -32,8 +32,6 @@ const ChannelCard = ({
   status,
   loading,
   disabled,
-  showDevOtp,
-  devOtp,
 }) => {
   const config = channelConfig[channel];
 
@@ -77,11 +75,6 @@ const ChannelCard = ({
         </button>
       </div>
 
-      {showDevOtp && (
-        <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600">
-          Dev OTP: <span className="font-semibold text-slate-800">{devOtp}</span>
-        </p>
-      )}
     </div>
   );
 };
@@ -100,7 +93,6 @@ export default function OtpVerificationPanel({
   const [verifying, setVerifying] = useState({ email: false, sms: false });
   const [sentChannels, setSentChannels] = useState({ email: false, sms: false });
   const [verifiedChannels, setVerifiedChannels] = useState({ email: false, sms: false });
-  const [devOtp, setDevOtp] = useState("");
   const [deliveryWarning, setDeliveryWarning] = useState("");
 
   const hasValidPhone = useMemo(() => INDIAN_PHONE.test((phone || "").trim()), [phone]);
@@ -112,7 +104,6 @@ export default function OtpVerificationPanel({
     setVerifying({ email: false, sms: false });
     setSentChannels({ email: false, sms: false });
     setVerifiedChannels({ email: false, sms: false });
-    setDevOtp("");
     setDeliveryWarning("");
   }, [email, phone]);
 
@@ -121,7 +112,7 @@ export default function OtpVerificationPanel({
       onStateChange({
         emailVerified: verifiedChannels.email,
         smsVerified: verifiedChannels.sms,
-        ready: verifiedChannels.email && (!hasValidPhone || verifiedChannels.sms),
+        ready: verifiedChannels.email,
       });
     }
   }, [hasValidPhone, onStateChange, verifiedChannels.email, verifiedChannels.sms]);
@@ -155,9 +146,15 @@ export default function OtpVerificationPanel({
         throw new Error(data.message || "Failed to send OTP");
       }
 
-      setSentChannels({ email: true, sms: hasValidPhone });
+      const emailDelivered = Boolean(
+        data?.delivery?.results?.find((result) => result.channel === "email")?.delivered
+      );
+      const smsDelivered = Boolean(
+        data?.delivery?.results?.find((result) => result.channel === "sms")?.delivered
+      );
+
+      setSentChannels({ email: emailDelivered, sms: smsDelivered });
       setVerifiedChannels({ email: false, sms: false });
-      setDevOtp(data.devOtp || "");
 
       const failedChannels = Array.isArray(data?.delivery?.results)
         ? data.delivery.results
@@ -169,7 +166,13 @@ export default function OtpVerificationPanel({
         setDeliveryWarning(failedChannels.join(" • "));
       }
 
-      toast.success(hasValidPhone ? "Email and SMS OTPs sent" : "Email OTP sent");
+      toast.success(
+        hasValidPhone
+          ? emailDelivered
+            ? "Email OTP sent. SMS verification is optional."
+            : "Email OTP could not be delivered"
+          : "Email OTP sent"
+      );
     } catch (error) {
       toast.error(error.message || "Failed to send OTP");
     } finally {
@@ -238,10 +241,10 @@ export default function OtpVerificationPanel({
             Verification
           </p>
           <h3 className="mt-1 text-lg font-bold text-slate-900">
-            Verify email and SMS before continuing
+            Verify your email before continuing
           </h3>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            We send the email OTP first. If your phone number is valid, the form also enables SMS OTP verification in a separate aligned block.
+            Email OTP is required for registration. SMS OTP is optional and can be used for extra security.
           </p>
         </div>
 
@@ -269,7 +272,7 @@ export default function OtpVerificationPanel({
 
         <p className="text-sm text-slate-500">
           {hasValidPhone
-            ? "Both channels must be verified before registration."
+            ? "Email verification is required. SMS verification is optional."
             : "Add a valid phone number to enable SMS verification."}
         </p>
       </div>
@@ -283,8 +286,6 @@ export default function OtpVerificationPanel({
           status={emailStatus}
           loading={verifying.email}
           disabled={!sentChannels.email}
-          showDevOtp={Boolean(devOtp)}
-          devOtp={devOtp}
         />
 
         {hasValidPhone ? (
