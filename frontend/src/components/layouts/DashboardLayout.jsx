@@ -286,6 +286,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
     navigate("/login");
   };
 
@@ -391,7 +392,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="p-2 rounded-lg hover:bg-red-100 transition-all duration-200 hidden sm:block"
+            className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-red-100 transition-all duration-200"
             style={{ color: theme.primary[600] }}
             title="Logout"
           >

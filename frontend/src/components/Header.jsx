@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { LogOut } from "lucide-react";
 import bloodLogo from "../assets/blood_logo.png";
 
 const WEBSITE_NAME = import.meta.env.VITE_WEBSITE_NAME || "OneDrop";
@@ -8,6 +9,7 @@ export default function Header({ currentUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const isAuthenticated = Boolean(currentUser || localStorage.getItem("token"));
 
   // Handle scroll effect
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function Header({ currentUser }) {
   const resolvedRole = currentUser?.role || localStorage.getItem("role");
   const dashboardPath = rolePathMap[resolvedRole] || "/login";
 
-  const authLinks = currentUser
+  const authLinks = isAuthenticated
     ? [
         { name: "Dashboard", path: dashboardPath },
         {
@@ -55,6 +57,13 @@ export default function Header({ currentUser }) {
         { name: "Register as Donor", path: "/register/donor" },
         { name: "Register as Facility", path: "/register/facility" },
       ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    setMobileOpen(false);
+    window.location.href = "/login";
+  };
 
   const isActiveLink = (path) => {
     return location.pathname === path;
@@ -129,6 +138,17 @@ export default function Header({ currentUser }) {
                 {link.name}
               </Link>
             ))}
+
+            {isAuthenticated && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-red-700 hover:bg-red-50 transition-all duration-200"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" /> Logout
+              </button>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -196,6 +216,16 @@ export default function Header({ currentUser }) {
                   {link.name}
                 </Link>
               ))}
+
+              {isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-base font-medium text-red-700 border border-red-200 bg-red-50 hover:bg-red-100 transition-all duration-200"
+                >
+                  <LogOut className="w-5 h-5" /> Logout
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -5,21 +5,19 @@ const OTP_DIGITS = /^[0-9]{6}$/;
 const INDIAN_PHONE = /^[6-9][0-9]{9}$/;
 
 const statusStyles = {
-  idle: "bg-slate-100 text-slate-600",
-  sent: "bg-amber-50 text-amber-700",
-  verified: "bg-emerald-50 text-emerald-700",
-  error: "bg-rose-50 text-rose-700",
+  idle: "bg-slate-100 text-slate-600 border border-slate-200",
+  sent: "bg-amber-50 text-amber-700 border border-amber-200",
+  verified: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  error: "bg-rose-50 text-rose-700 border border-rose-200",
 };
 
 const channelConfig = {
   email: {
     label: "Email OTP",
-    helper: "Check your inbox and enter the 6-digit code.",
     placeholder: "Enter email OTP",
   },
   sms: {
     label: "SMS OTP",
-    helper: "Enter the code sent to your phone number.",
     placeholder: "Enter SMS OTP",
   },
 };
@@ -36,14 +34,28 @@ const ChannelCard = ({
   const config = channelConfig[channel];
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold text-slate-900">{config.label}</p>
-          <p className="mt-1 text-xs text-slate-500">{config.helper}</p>
-        </div>
+    <div className="rounded-xl border border-slate-200 bg-white p-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
+        <p className="min-w-[88px] text-sm font-semibold text-slate-800">{config.label}</p>
+        <input
+          type="text"
+          inputMode="numeric"
+          value={value}
+          onChange={onChange}
+          maxLength={6}
+          placeholder={config.placeholder}
+          className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+        />
+        <button
+          type="button"
+          onClick={onVerify}
+          disabled={disabled || loading || !OTP_DIGITS.test(value)}
+          className="inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? "Verifying..." : status === "verified" ? "Verified" : "Verify"}
+        </button>
         <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${statusStyles[status]}`}
+          className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium ${statusStyles[status]}`}
         >
           {status === "verified"
             ? "Verified"
@@ -54,27 +66,6 @@ const ChannelCard = ({
                 : "Not sent"}
         </span>
       </div>
-
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-        <input
-          type="text"
-          inputMode="numeric"
-          value={value}
-          onChange={onChange}
-          maxLength={6}
-          placeholder={config.placeholder}
-          className="min-w-0 flex-1 rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
-        />
-        <button
-          type="button"
-          onClick={onVerify}
-          disabled={disabled || loading || !OTP_DIGITS.test(value)}
-          className="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loading ? "Verifying..." : status === "verified" ? "Verified" : "Verify"}
-        </button>
-      </div>
-
     </div>
   );
 };
@@ -234,17 +225,17 @@ export default function OtpVerificationPanel({
       : "idle";
 
   return (
-    <section className={`rounded-3xl border border-red-100 bg-gradient-to-br from-red-50 via-white to-white p-4 shadow-sm sm:p-5 ${className}`}>
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-        <div className="max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-red-600">
+    <section className={`rounded-2xl border border-red-100 bg-white p-4 sm:p-5 ${className}`}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-red-600">
             Verification
           </p>
           <h3 className="mt-1 text-lg font-bold text-slate-900">
-            Verify your email before continuing
+            Verify your email to continue
           </h3>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Email OTP is required for registration. SMS OTP is optional and can be used for extra security.
+          <p className="mt-1 text-sm text-slate-600">
+            Keep it simple: verify email first. SMS is optional.
           </p>
         </div>
 
@@ -265,19 +256,19 @@ export default function OtpVerificationPanel({
           type="button"
           onClick={requestOtp}
           disabled={requesting || !/^\S+@\S+\.\S+$/.test((email || "").trim())}
-          className="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {requesting ? "Sending OTP..." : hasValidPhone ? "Send Email + SMS OTP" : "Send Email OTP"}
         </button>
 
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 sm:text-right">
           {hasValidPhone
             ? "Email verification is required. SMS verification is optional."
             : "Add a valid phone number to enable SMS verification."}
         </p>
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+      <div className="mt-4 space-y-3">
         <ChannelCard
           channel="email"
           value={emailCode}
@@ -299,14 +290,14 @@ export default function OtpVerificationPanel({
             disabled={!sentChannels.sms}
           />
         ) : (
-          <div className="flex min-h-[172px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-            SMS verification appears here once a valid phone number is entered.
+          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            SMS verification appears automatically after you enter a valid phone number.
           </div>
         )}
       </div>
 
       {deliveryWarning && (
-        <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           {deliveryWarning}
         </p>
       )}
