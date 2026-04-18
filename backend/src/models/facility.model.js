@@ -112,6 +112,13 @@ const facilitySchema = new mongoose.Schema(
     },
     is24x7: { type: Boolean, default: false },
     emergencyServices: { type: Boolean, default: false },
+    responseTimeMinutes: {
+      type: Number,
+      default: 30,
+      min: 5,
+      max: 300,
+      description: "Average response time in minutes for emergency requests"
+    },
 
     // 📜 History for Admin Dashboard
 

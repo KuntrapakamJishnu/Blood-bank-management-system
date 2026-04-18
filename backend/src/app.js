@@ -12,6 +12,8 @@ import adminRoutes from "./routes/admin.routes.js";
 import bloodLabRoutes from "./routes/blood-lab.routes.js";
 import hospitalRoutes from "./routes/hospital.routes.js";
 import campRoutes from "./routes/camp.routes.js";
+import emergencyRequestRoutes from "./routes/emergency-request.routes.js";
+import chatRoutes from "./routes/chat.routes.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.middleware.js";
 import sanitizeRequest from "./middleware/sanitize.middleware.js";
 import { responseNormalizer } from "./middleware/response.middleware.js";
@@ -59,6 +61,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/blood-lab", bloodLabRoutes);
 app.use("/api/hospital", hospitalRoutes);
 app.use("/api/camps", campRoutes);
+app.use("/api/emergency-requests", emergencyRequestRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

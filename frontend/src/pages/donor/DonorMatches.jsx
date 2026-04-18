@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import {
@@ -15,17 +16,22 @@ import {
   Navigation,
   Search,
   Shield,
+  Zap,
 } from "lucide-react";
+import ChatModal from "../../components/ChatModal";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const DonorMatches = () => {
+  const navigate = useNavigate();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [locating, setLocating] = useState(false);
   const [radiusKm, setRadiusKm] = useState(50);
   const [userLocation, setUserLocation] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [chatOpen, setChatOpen] = useState(false);
+  const [selectedFacility, setSelectedFacility] = useState(null);
 
   const fetchMatches = async (overrideLocation) => {
     try {
@@ -234,29 +240,45 @@ const DonorMatches = () => {
                 </div>
 
                 <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/donor/emergency/${match._id}`)}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors"
+                  >
+                    <Zap className="w-4 h-4" />
+                    Emergency Request
+                  </button>
                   <a
                     href={`tel:${match.phone || match.emergencyContact || ""}`}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-red-200 text-red-700 font-semibold hover:bg-red-50 transition-colors"
                   >
                     <Phone className="w-4 h-4" />
                     Call
                   </a>
-                  <a
-                    href={`mailto:${match.email}?subject=Blood%20Donation%20Match`}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-red-200 text-red-700 font-semibold hover:bg-red-50 transition-colors"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Email
-                  </a>
                   <button
                     type="button"
-                    onClick={() => toast.success("Chat support can be added with WhatsApp or in-app messaging next.")}
+                    onClick={() => {
+                      setSelectedFacility(match);
+                      setChatOpen(true);
+                    }}
                     className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
                   >
                     <MessageCircle className="w-4 h-4" />
                     Chat
                   </button>
                 </div>
+
+        {/* Chat Modal */}
+        {chatOpen && selectedFacility && (
+          <ChatModal
+            facilityId={selectedFacility._id}
+            facilityName={selectedFacility.name}
+            onClose={() => {
+              setChatOpen(false);
+              setSelectedFacility(null);
+            }}
+          />
+        )}
               </div>
             ))}
           </div>

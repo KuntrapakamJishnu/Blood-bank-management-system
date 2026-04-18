@@ -31,8 +31,11 @@ const About = lazy(() => import("./components/about/About"));
 const Contact = lazy(() => import("./components/contact/Contact"));
 const DonorDonationHistory = lazy(() => import("./pages/donor/DonorDonationHistory"));
 const DonorMatches = lazy(() => import("./pages/donor/DonorMatches"));
+const EmergencyRequest = lazy(() => import("./pages/donor/EmergencyRequest"));
 const StaticInfoPage = lazy(() => import("./components/StaticInfoPage"));
 const ForgotPassword = lazy(() => import("./pages/user/ForgotPassowrd"));
+const AdminBloodCamps = lazy(() => import("./pages/admin/AdminBloodCamps"));
+const AdminEmergencyRequests = lazy(() => import("./pages/admin/AdminEmergencyRequests"));
 
 function App() {
   return (
@@ -64,6 +67,7 @@ function App() {
           <Route path="profile" element={<DonorProfile />} />
           <Route path="camps" element={<DonorCampsList />} />
           <Route path="matches" element={<DonorMatches />} />
+          <Route path="emergency/:facilityId" element={<EmergencyRequest />} />
           <Route path="history" element={<DonorDonationHistory />} />
         </Route>
       
@@ -92,7 +96,8 @@ function App() {
           <Route path="verification" element={<AdminFacilities />} />
           <Route path="donors" element={<GetAllDonors />} />
           <Route path="facilities" element={<GetAllFacilities />} />
-          <Route path="donations" element={<AdminDonations />} />
+          <Route path="donations" element={<ABloodCamps />} />
+          <Route path="emergency-requests" element={<AdminEmergencyRequestDonations />} />
           <Route path="camps" element={<AdminCamps />} />
         </Route>
       </Routes>
