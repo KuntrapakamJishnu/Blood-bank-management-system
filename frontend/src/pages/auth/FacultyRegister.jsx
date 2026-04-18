@@ -3,6 +3,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { INDIA_STATES_AND_MAJOR_CITIES as STATES } from "../../constants/indiaLocations";
+import OtpVerificationPanel from "../../components/auth/OtpVerificationPanel";
 import bloodLogo from "../../assets/blood_logo.png";
 
 // Constants for better maintainability
@@ -96,11 +97,11 @@ export default function FacilityRegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [touched, setTouched] = useState({});
-  const [otpCode, setOtpCode] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [devOtp, setDevOtp] = useState("");
+  const [otpStatus, setOtpStatus] = useState({
+    emailVerified: false,
+    smsVerified: false,
+    ready: false,
+  });
   const [geoLocation, setGeoLocation] = useState(null);
   const [geoLoading, setGeoLoading] = useState(false);
 
@@ -109,13 +110,6 @@ export default function FacilityRegisterForm() {
   // Handle form field changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
-    if (name === "email") {
-      setOtpSent(false);
-      setOtpVerified(false);
-      setOtpCode("");
-      setDevOtp("");
-    }
 
     setFormData((prev) => {
       // Handle nested objects
@@ -294,8 +288,8 @@ export default function FacilityRegisterForm() {
       return;
     }
 
-    if (!otpVerified) {
-      toast.error("Please verify OTP before registration");
+    if (!otpStatus.ready) {
+      toast.error("Please verify email and SMS OTP before registration");
       return;
     }
 
@@ -322,7 +316,7 @@ export default function FacilityRegisterForm() {
     // **YOUR TARGET URL**
     const API_URL = `${AUTH_BASE_URL}/register`;
 
-    console.log("Submitting Data to Backend:", submissionPayload); // Use the new payload
+    console.log("Submitting Data to Backend:", submissionPayload);
 
     try {
       const response = await fetch(API_URL, {
@@ -339,22 +333,15 @@ export default function FacilityRegisterForm() {
         const result = await response.json();
         console.log("Facility Data Registered Successfully:", result);
         toast("✅ Facility Registered Successfully!");
-        // You might want to clear the form or redirect here
         navigate("/");
       } else {
-        // Handle server-side errors (400, 500 status codes)
         const errorData = await response.json();
         console.error("Registration failed:", response.status, errorData);
-        alert(
-          `❌ Registration failed. Status: ${response.status}. Message: ${errorData.message || "Check server logs."}`,
-        );
+        toast.error(errorData.message || "Registration failed. Please try again.");
       }
     } catch (error) {
-      // Handle network errors (e.g., server unreachable)
       console.error("Network or fetch error:", error);
-      alert(
-        "❌ Registration failed due to a network error. Ensure the backend is running.",
-      );
+      toast.error("Registration failed due to a network error. Ensure the backend is running.");
     } finally {
       setIsSubmitting(false);
     }
@@ -366,77 +353,6 @@ export default function FacilityRegisterForm() {
   };
 
   const progressPercentage = (step / 3) * 100;
-
-  const sendOtp = async () => {
-    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      toast.error("Enter a valid email before requesting OTP");
-      return;
-    }
-
-    const hasValidPhone = /^[6-9][0-9]{9}$/.test(formData.phone);
-    const channel = hasValidPhone ? "both" : "email";
-
-    setOtpLoading(true);
-    try {
-      const response = await fetch(`${AUTH_BASE_URL}/request-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          phone: hasValidPhone ? formData.phone : undefined,
-          channel,
-          purpose: "register",
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to send OTP");
-      }
-
-      setOtpSent(true);
-      setOtpVerified(false);
-      setDevOtp(data.devOtp || "");
-      toast.success("OTP sent successfully");
-    } catch (error) {
-      toast.error(error.message || "Failed to send OTP");
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  const verifyOtp = async () => {
-    if (!/^[0-9]{6}$/.test(otpCode)) {
-      toast.error("Enter a valid 6-digit OTP");
-      return;
-    }
-
-    setOtpLoading(true);
-    try {
-      const response = await fetch(`${AUTH_BASE_URL}/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          code: otpCode,
-          purpose: "register",
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "OTP verification failed");
-      }
-
-      setOtpVerified(true);
-      toast.success("OTP verified successfully");
-    } catch (error) {
-      setOtpVerified(false);
-      toast.error(error.message || "OTP verification failed");
-    } finally {
-      setOtpLoading(false);
-    }
-  };
 
   const captureLocation = () => {
     if (!navigator.geolocation) {
@@ -561,37 +477,6 @@ export default function FacilityRegisterForm() {
                   </p>
                 )}
 
-                <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={sendOtp}
-                    disabled={otpLoading}
-                    className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition disabled:opacity-60"
-                  >
-                    {otpLoading ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
-                  </button>
-                  <input
-                    type="text"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    placeholder="Enter 6-digit OTP"
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  />
-                  <button
-                    type="button"
-                    onClick={verifyOtp}
-                    disabled={otpLoading || !otpSent}
-                    className="px-3 py-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition disabled:opacity-60"
-                  >
-                    {otpVerified ? "Verified" : "Verify OTP"}
-                  </button>
-                </div>
-
-                {devOtp && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    Dev OTP: {devOtp}
-                  </p>
-                )}
               </div>
             </div>
           )}
@@ -744,6 +629,13 @@ export default function FacilityRegisterForm() {
                   )}
                 </div>
               </div>
+
+              <OtpVerificationPanel
+                email={formData.email}
+                phone={formData.phone}
+                authBaseUrl={AUTH_BASE_URL}
+                onStateChange={setOtpStatus}
+              />
 
               {/* Address Section */}
               <div className="space-y-4">
