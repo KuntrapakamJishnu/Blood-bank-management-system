@@ -16,10 +16,12 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import OtpStatusDebugger from "../../components/admin/OtpStatusDebugger";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -30,7 +32,7 @@ const AdminDashboard = () => {
 
       const token = localStorage.getItem("token");
       if (!token) {
-        window.location.href = "/login";
+        navigate("/login", { replace: true });
         return;
       }
 
@@ -65,7 +67,7 @@ const AdminDashboard = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     fetchStats();
@@ -192,7 +194,7 @@ const AdminDashboard = () => {
       </p>
 
       <button
-        onClick={() => (window.location.href = href)}
+        onClick={() => navigate(href)}
         className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
       >
         {buttonText}

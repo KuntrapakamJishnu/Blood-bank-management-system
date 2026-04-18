@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { Droplet, Plus, Minus, AlertTriangle, CheckCircle, Calendar, RefreshCw } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const HospitalBloodStock = () => {
+  const navigate = useNavigate();
   const [stock, setStock] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -21,10 +23,9 @@ const HospitalBloodStock = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      // In HospitalBloodStock component, change the API call:
-const res = await axios.get(`${API_BASE_URL}/api/hospital/blood/stock`, {
-  headers: { Authorization: `Bearer ${token}` },
-});
+      const res = await axios.get(`${API_BASE_URL}/api/hospital/blood/stock`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       
       const stockData = res.data.data || [];
       setStock(stockData);
@@ -220,7 +221,7 @@ const res = await axios.get(`${API_BASE_URL}/api/hospital/blood/stock`, {
               <h3 className="text-lg font-medium text-gray-800 mb-2">No blood stock available</h3>
               <p className="text-gray-600 mb-4">Request blood from blood labs to build your inventory</p>
               <button
-                onClick={() => window.location.href = '/hospital/request-blood'}
+                onClick={() => navigate('/hospital/request-blood')}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
               >
                 Request Blood
@@ -350,7 +351,7 @@ const res = await axios.get(`${API_BASE_URL}/api/hospital/blood/stock`, {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
             <div className="space-y-3">
               <button
-                onClick={() => window.location.href = '/hospital/request-blood'}
+                onClick={() => navigate('/hospital/request-blood')}
                 className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >
                 <Plus size={18} />

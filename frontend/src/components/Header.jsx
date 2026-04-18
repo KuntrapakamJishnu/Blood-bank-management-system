@@ -32,10 +32,23 @@ export default function Header({ currentUser }) {
     { name: "Contact", path: "/contact" },
   ];
 
+  const rolePathMap = {
+    donor: "/donor",
+    hospital: "/hospital",
+    "blood-lab": "/lab",
+    admin: "/admin",
+  };
+
+  const resolvedRole = currentUser?.role || localStorage.getItem("role");
+  const dashboardPath = rolePathMap[resolvedRole] || "/login";
+
   const authLinks = currentUser
     ? [
-        { name: "Dashboard", path: "/dashboard" },
-        { name: "Profile", path: "/profile" },
+        { name: "Dashboard", path: dashboardPath },
+        {
+          name: "Profile",
+          path: resolvedRole === "donor" ? "/donor/profile" : dashboardPath,
+        },
       ]
     : [
         { name: "Login", path: "/login" },

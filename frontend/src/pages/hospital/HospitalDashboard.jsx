@@ -15,10 +15,12 @@ import {
   RefreshCw,
 } from "lucide-react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const HospitalDashboard = () => {
+  const navigate = useNavigate();
   const [hospital, setHospital] = useState(null);
   const [bloodStock, setBloodStock] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -38,7 +40,7 @@ const HospitalDashboard = () => {
         console.log("Token being sent:", token);
 
         if (!token) {
-          window.location.href = "/login";
+          navigate("/login", { replace: true });
           return;
         }
 
@@ -125,7 +127,7 @@ const HospitalDashboard = () => {
     };
 
     fetchHospitalData();
-  }, []);
+  }, [navigate]);
 
   const getLoginHistory = () => {
     if (!hospital?.history) return [];
@@ -391,9 +393,7 @@ const HospitalDashboard = () => {
                   No blood inventory available
                 </p>
                 <button
-                  onClick={() =>
-                    (window.location.href = "/hospital/request-blood")
-                  }
+                  onClick={() => navigate("/hospital/request-blood")}
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
                 >
                   Request Blood
@@ -437,9 +437,7 @@ const HospitalDashboard = () => {
 
                 {bloodStock.length > 6 && (
                   <button
-                    onClick={() =>
-                      (window.location.href = "/hospital/blood-stock")
-                    }
+                    onClick={() => navigate("/hospital/blood-stock")}
                     className="w-full text-center text-red-600 hover:text-red-700 py-2 border border-dashed border-gray-300 rounded-lg"
                   >
                     View All {bloodStock.length} Blood Types
@@ -493,9 +491,7 @@ const HospitalDashboard = () => {
 
                 {requests.length > 5 && (
                   <button
-                    onClick={() =>
-                      (window.location.href = "/hospital/request-history")
-                    }
+                    onClick={() => navigate("/hospital/request-history")}
                     className="w-full text-center text-red-600 hover:text-red-700 py-2 border border-dashed border-gray-300 rounded-lg"
                   >
                     View All {requests.length} Requests

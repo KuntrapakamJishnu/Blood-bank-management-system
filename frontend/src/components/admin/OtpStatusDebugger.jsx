@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { CheckCircle, Clock, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const OtpStatusDebugger = ({ className = "", description }) => {
+  const navigate = useNavigate();
   const API_BASE_URL = import.meta.env.VITE_API_URL || "";
   const [otpDebugEmail, setOtpDebugEmail] = useState("");
   const [otpDebugPurpose, setOtpDebugPurpose] = useState("register");
@@ -22,7 +24,7 @@ const OtpStatusDebugger = ({ className = "", description }) => {
 
       const token = localStorage.getItem("token");
       if (!token) {
-        window.location.href = "/login";
+        navigate("/login", { replace: true });
         return;
       }
 
