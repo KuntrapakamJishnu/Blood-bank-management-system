@@ -328,8 +328,6 @@
  *                       properties:
  *                         resendConfigured:
  *                           type: boolean
- *                         smtpConfigured:
- *                           type: boolean
  *                         fromEmail:
  *                           type: boolean
  *                     sms:

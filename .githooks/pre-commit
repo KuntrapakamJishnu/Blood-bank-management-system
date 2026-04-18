@@ -22,10 +22,10 @@ added_lines="$(git diff --cached -U0 --no-color | grep '^+' || true)"
 
 if [[ -n "$added_lines" ]]; then
   # High-confidence secret patterns
-  hits="$(echo "$added_lines" | grep -E "mongodb\+srv://|ghp_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{20,}|sk_live_[A-Za-z0-9]{10,}|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|TWILIO_AUTH_TOKEN\s*=|SMTP_PASS\s*=|JWT_SECRET\s*=|MONGO_URI\s*=" || true)"
+  hits="$(echo "$added_lines" | grep -E "mongodb\+srv://|ghp_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{20,}|sk_live_[A-Za-z0-9]{10,}|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|TWILIO_AUTH_TOKEN\s*=|JWT_SECRET\s*=|MONGO_URI\s*=" || true)"
 
   # Ignore obvious placeholder/example lines
-  filtered_hits="$(echo "$hits" | grep -Ev "change_this|change-me|example|<|YOUR_|your_|dummy|placeholder|MONGO_URI=\s*$|SMTP_PASS=\s*$|TWILIO_AUTH_TOKEN=\s*$|JWT_SECRET=\s*$" || true)"
+  filtered_hits="$(echo "$hits" | grep -Ev "change_this|change-me|example|<|YOUR_|your_|dummy|placeholder|MONGO_URI=\s*$|TWILIO_AUTH_TOKEN=\s*$|JWT_SECRET=\s*$" || true)"
 
   if [[ -n "$filtered_hits" ]]; then
     echo "[secret-guard] ERROR: Possible secret detected in staged changes:"

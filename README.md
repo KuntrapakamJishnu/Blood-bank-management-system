@@ -88,11 +88,8 @@ Required environment variables on Render:
 - `SEED_ADMIN_EMAIL=<admin email>`
 - `SEED_ADMIN_PASSWORD=<admin password>`
 - `OTP_FROM_EMAIL=<verified sender email>`
-- `SMTP_HOST=<smtp host>`
-- `SMTP_PORT=587`
-- `SMTP_USER=<smtp user>`
-- `SMTP_PASS=<smtp app password>`
-- `SMTP_SECURE=false`
+- `RESEND_API_KEY=<resend api key>`
+- `RESEND_FROM_EMAIL=<verified resend sender>`
 - `TWILIO_ACCOUNT_SID=<twilio sid>`
 - `TWILIO_AUTH_TOKEN=<twilio token>`
 - `TWILIO_FROM_NUMBER=<verified twilio number>`
@@ -122,8 +119,7 @@ node src/seedAdmin.js
 
 The project now supports real OTP delivery through:
 
-- Resend email API (preferred)
-- SMTP email provider (optional fallback)
+- Resend email API
 - Twilio SMS
 
 ### Backend Environment Variables
@@ -131,13 +127,8 @@ The project now supports real OTP delivery through:
 Set these in [backend/.env.example](backend/.env.example):
 
 - `RESEND_API_KEY`
-- `RESEND_FROM_EMAIL` (preferred sender)
-- `OTP_FROM_EMAIL` (fallback sender)
-- `SMTP_HOST` (optional fallback)
-- `SMTP_PORT` (optional fallback)
-- `SMTP_USER` (optional fallback)
-- `SMTP_PASS` (optional fallback)
-- `SMTP_SECURE` (optional fallback)
+- `RESEND_FROM_EMAIL` (sender)
+- `OTP_FROM_EMAIL` (optional alias for sender)
 - `TWILIO_ACCOUNT_SID`
 - `TWILIO_AUTH_TOKEN`
 - `TWILIO_VERIFY_SERVICE_SID` (recommended for production SMS verification)
@@ -173,7 +164,7 @@ This repository includes a pre-commit hook to reduce accidental secret leaks.
 What it blocks:
 
 - Any `.env` file commit (except `.env.example`)
-- Common high-risk secrets in staged changes (Mongo URI creds, JWT secret assignments, Twilio token assignments, SMTP password assignments, private keys, API token patterns)
+- Common high-risk secrets in staged changes (Mongo URI creds, JWT secret assignments, Twilio token assignments, private keys, API token patterns)
 
 Install once per clone:
 
